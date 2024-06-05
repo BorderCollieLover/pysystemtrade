@@ -273,7 +273,7 @@ class ibExecutionStackData(brokerExecutionStackData):
 
         return placed_broker_order_with_controls
 
-    def put_what_if_order_on_stack(self, broker_order: brokerOrder) -> ibOrderWithControls:
+    def what_if_order(self, broker_order: brokerOrder) -> tradeWithContract:
         """
 
         :param broker_order: key properties are instrument_code, contract_id, quantity
@@ -281,11 +281,9 @@ class ibExecutionStackData(brokerExecutionStackData):
         """
         trade_with_contract_from_ib = self._send_broker_order_to_IB(broker_order, what_if=True)
 
-        placed_broker_order_with_controls = self._return_place_order_given_ib_trade_with_contract(
-            trade_with_contract_from_ib=trade_with_contract_from_ib,
-            broker_order=broker_order)
+        return trade_with_contract_from_ib
 
-        return placed_broker_order_with_controls
+
 
     def _return_place_order_given_ib_trade_with_contract(self, trade_with_contract_from_ib: tradeWithContract, broker_order: brokerOrder) -> ibOrderWithControls:
         if trade_with_contract_from_ib is missing_order:
@@ -308,6 +306,7 @@ class ibExecutionStackData(brokerExecutionStackData):
         self._add_order_with_controls_to_store(placed_broker_order_with_controls)
 
         return placed_broker_order_with_controls
+
 
     def _send_broker_order_to_IB(self, broker_order: brokerOrder, what_if: bool = False) -> tradeWithContract:
         """
@@ -347,6 +346,7 @@ class ibExecutionStackData(brokerExecutionStackData):
         self.log.debug("Order submitted to IB", **log_attrs)
 
         return placed_broker_trade_object
+
 
     def match_db_broker_order_to_order_from_brokers(
         self, broker_order_to_match: brokerOrder

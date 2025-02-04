@@ -2,6 +2,11 @@
 #The only change is to set the output_datapath to a desired output path
 # and initialize the csv_roll_calendars object with this output path 
 
+#there is an existing script that does this already actually 
+#sysinit/futures/rollcalendars_from_providedcsv_prices.py
+# which does pretty much the same thing 
+
+
 from syscore.constants import arg_not_supplied
 from sysobjects.roll_calendars import rollCalendar
 from sysdata.csv.csv_roll_calendars import csvRollCalendarData

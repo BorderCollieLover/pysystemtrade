@@ -25,7 +25,8 @@ if __name__ == "__main__":
     diag_prices = diagPrices()
 
     ### changed these two lines
-    output_datapath = '/mnt/sda1/pysystemtrade/mtdatastore/rollcalendarfrommultipleprices'
+    #output_datapath = '/mnt/sda1/pysystemtrade/mtdatastore/rollcalendarfrommultipleprices'
+    output_datapath = '/mnt/sda1/tmp2'
     csv_roll_calendars = csvRollCalendarData(output_datapath)
     ### end of changes 
     csv_rollparameters = csvRollParametersData()

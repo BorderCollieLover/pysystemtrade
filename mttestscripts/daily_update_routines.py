@@ -17,7 +17,7 @@ if __name__ == "__main__":
     config = Config()
     config = get_production_config()
     instruments = FuturesInstrumentData.get_list_of_instruments()
-    instruments = ['ALUMINUM']
+    #instruments = ['ALUMINUM']
 
     
     #add contracts to DB

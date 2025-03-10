@@ -280,3 +280,243 @@ Email stored not sent on 2025-02-10 00:11:19.517769: Price Spike CORN
 Spike found in prices for CORN/20250900: need to manually check by running interactive_manual_check_historical_prices
 ********************************************************************************
 
+********************************************************************************
+Email stored not sent on 2025-03-05 03:30:52.080557: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20260600: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-05 03:30:56.819486: Price Spike EURIBOR-ICE
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-05 03:30:56.822021: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20260900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-05 03:30:58.905245: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20261200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-05 03:31:53.323357: Price Spike CRUDE_W
+
+Spike found in prices for CRUDE_W/20260100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-05 03:40:13.682132: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20260600: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-05 03:40:16.197587: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20260900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-05 03:40:18.652921: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20261200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-05 03:41:10.187683: Price Spike CRUDE_W
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-05 03:41:10.192566: Price Spike CRUDE_W
+
+Spike found in prices for CRUDE_W/20260100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:03:51.934602: Price Spike SOFR
+
+Spike found in prices for SOFR/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:04:04.585222: Price Spike SOFR
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:04:04.587683: Price Spike SOFR
+
+Spike found in prices for SOFR/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:04:14.665198: Price Spike SOFR
+
+Spike found in prices for SOFR/20261200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:04:17.243182: Price Spike SOFR
+
+Spike found in prices for SOFR/20270300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:04:19.828213: Price Spike SOFR
+
+Spike found in prices for SOFR/20270600: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:05:32.587248: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:05:35.131685: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20260300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:05:37.699506: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20260600: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:05:40.191619: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20260900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:05:42.727748: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20261200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:05:43.907687: Price Spike EURIBOR-ICE
+
+Spike found in prices for EURIBOR-ICE/20261200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:06:03.474268: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20260300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:06:08.811666: Price Spike EURIBOR
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:06:08.813957: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20260600: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:06:13.362518: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20261200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-06 00:06:14.569971: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20261200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:02:47.023032: Price Spike CORN
+
+Spike found in prices for CORN/20250500: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:02:53.727401: Price Spike CORN
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:02:53.729496: Price Spike CORN
+
+Spike found in prices for CORN/20250700: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:02:56.543794: Price Spike CORN
+
+Spike found in prices for CORN/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:02:59.694809: Price Spike CORN
+
+Spike found in prices for CORN/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:03:02.407442: Price Spike CORN
+
+Spike found in prices for CORN/20260300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:05:21.174076: Price Spike WHEAT
+
+Spike found in prices for WHEAT/20250500: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:06:43.144150: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20260900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:06:48.478526: Price Spike EURIBOR
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-07 00:06:48.487544: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20261200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-08 00:05:51.977579: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-09 00:06:01.610060: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-03-10 00:06:08.055270: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+

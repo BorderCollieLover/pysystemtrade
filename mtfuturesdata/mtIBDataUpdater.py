@@ -454,22 +454,9 @@ def export_all_existing_contract_prices():
 
 if __name__ == "__main__":
     test_contracts = [
-                    {'_id': 477836957, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20220617', 'localSymbol': 'ESM2', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3},   
-                    {'_id': 495512551, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20221216', 'localSymbol': 'ESZ2', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3, 'ohlcv_error': 0},
-                    {'_id': 495512552, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20231215', 'localSymbol': 'ESZ3', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3}, 
-                    {'_id': 495512557, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20241220', 'localSymbol': 'ESZ4', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 1, 'min_multiplier_tag': 0, 'priority_tag': 1, 'ohlcv_error': 0}, 
                     {'_id': 495512563, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20251219', 'localSymbol': 'ESZ5', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0}, 
-                    {'_id': 495512566, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20220916', 'localSymbol': 'ESU2', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3}, 
-                    {'_id': 495512569, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20230616', 'localSymbol': 'ESM3', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3, 'ohlcv_error': 0}, 
-                    {'_id': 495512572, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20230317', 'localSymbol': 'ESH3', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3, 'ohlcv_error': 0}, 
-                    {'_id': 497222760, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20230915', 'localSymbol': 'ESU3', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3}, 
                     {'_id': 515416632, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20261218', 'localSymbol': 'ESZ6', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0}, 
-                    {'_id': 533620665, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20240315', 'localSymbol': 'ESH4', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3}, 
-                    {'_id': 551601561, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20240621', 'localSymbol': 'ESM4', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3, 'ohlcv_error': 0}, 
-                    {'_id': 568550526, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20240920', 'localSymbol': 'ESU4', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 0, 'min_multiplier_tag': 0, 'priority_tag': 0, 'ohlcv_error': 0}, 
                     {'_id': 586139767, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20271217', 'localSymbol': 'ESZ7', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 4}, 
-                    {'_id': 603558932, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20250321', 'localSymbol': 'ESH5', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0}, 
-                    {'_id': 620731015, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20250620', 'localSymbol': 'ESM5', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0}, 
                     {'_id': 637533641, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20250919', 'localSymbol': 'ESU5', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0}, 
                     {'_id': 649180661, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20270617', 'localSymbol': 'ESM7', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 4}, 
                     {'_id': 649180666, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20280317', 'localSymbol': 'ESH8', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0}, 
@@ -486,20 +473,14 @@ if __name__ == "__main__":
                     {'_id': 711280049, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20290921', 'localSymbol': 'ESU9', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 4}]
     test1_contracts = [
         {'_id': 495512563, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20251219', 'localSymbol': 'ESZ5', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0}, 
-        {'_id': 495512557, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20241220', 'localSymbol': 'ESZ4', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 1, 'min_multiplier_tag': 0, 'priority_tag': 1, 'ohlcv_error': 0}, 
-        {'_id': 568550526, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20240920', 'localSymbol': 'ESU4', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 0, 'min_multiplier_tag': 0, 'priority_tag': 0, 'ohlcv_error': 0}, 
         {'_id': 712984914, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20250731', 'localSymbol': 'SR1N5', 'multiplier': '4167', 'secType': 'FUT', 'symbol': 'SOFR1', 'tradingClass': 'SR1', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0},
-        {'_id': 715358881, 'currency': 'KRW', 'exchange': 'KSE', 'lastTradeDateOrContractMonth': '20241010', 'localSymbol': '1F44V', 'multiplier': '10', 'secType': 'FUT', 'symbol': '000250', 'tradingClass': '1F4', 'most_recent_contract_tag': 1, 'min_multiplier_tag': 0, 'priority_tag': 1, 'ohlcv_error': 0}
     ]
-    ###
-    # test_contracts = [
-    #    {'_id': 495512552, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20231215', 'localSymbol': 'ESZ3', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 3, 'min_multiplier_tag': 0, 'priority_tag': 3}, 
-    #]
-    ###
+    
     WAIT_FOR_A_LONG_TIME = 0
     test= mtIBDataUpdater()
     all_contracts = get_all_ib_contracts()            
     shuffle(all_contracts)                                                                      
+    
     #for contract in all_contracts:
     for contract in test_contracts:
         #print(contract)

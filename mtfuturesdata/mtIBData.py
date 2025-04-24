@@ -14,7 +14,8 @@ from sysdata.mongodb.mongo_IB_client_id import mongoIbBrokerClientIdData
 from sysdata.data_blob import identifying_name
 from sysbrokers.IB.client.ib_price_client import  TIMEOUT_SECONDS_ON_HISTORICAL_DATA
 from ib_insync import Contract, Future, IB, util
-
+import time
+from datetime import timezone
 VERY_FEW_DATA_POINTS = 5
 
 #A stripped down version of the PST dataBroker class to test the running sequence 
@@ -103,6 +104,11 @@ class mtIBData(object):
 
    
     def retrieve_historical_data_for_contract_with_frequency(self, contract, startDateTime='', endDateTime='', useRTH: bool=False,barSizeSetting: str='1 hour'):
+        if time.tzname[time.daylight]=='UTC':
+            ...
+        else:
+            self._raise_and_log_error('The local time zone is not UTC, please set the time zone to UTC')
+        
         #sample code from ib_sync recipe
         """ dt = ''
         barsList = []
@@ -187,7 +193,21 @@ class mtIBData(object):
             )
             if not bars: 
                 break
-            #print(bars)
+            bar_length = len(bars)
+            print(bars)
+            if formatDate==2:
+                bars = [bar for bar in bars if bar.date<datetime.datetime.now(timezone.utc)]
+            else:
+                bars = [bar for bar in bars if bar.date<datetime.datetime.now().date()]
+            new_bar_length = len(bars)
+            if new_bar_length < bar_length:
+                print(
+                "Ignoring %d prices with future timestamps"
+                % (bar_length - new_bar_length)
+            )
+            if not bars:
+                break; 
+
             
             #Occasionally the code will end up in an infinite loop in the following scenario: 
             #Say the existing data is from August 1, 2024 to now, the code is attempting to retrieve a block of historical bars that ends before August 1
@@ -646,7 +666,9 @@ if __name__ == "__main__":
     Future('MES','20241220','CME')
     Contract(conId=654503314, exchange='CME')
     test=mtIBData()
-    df = test.retrieve_historical_data_for_contract_with_frequency(contract=Future('ES','20241220','CME'))
+    df = test.retrieve_historical_data_for_contract_with_frequency(contract=Future('ES','20251219','CME'))
+    df = test.retrieve_historical_data_for_contract_with_frequency(contract=Future('ES','20251219','CME'), barSizeSetting='1 day')
+
     #df = test.retrieve_historical_data_for_contract_with_frequency(contract=Future('ES','20220617','CME'))
     #df = test.retrieve_historical_data_for_contract_with_frequency(contract=Future('ES','20241220','CME'), startDateTime='2024-03-04 14:00:00+00:00')
     #df = test.retrieve_historical_data_for_contract_with_frequency(contract=Future('ES','20241220','CME'), startDateTime='2024-03-04 14:00:00')

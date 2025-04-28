@@ -16,8 +16,12 @@ def count_parquet_in_a_directory(file_path):
     total_lines= 0 
     all_files = glob(file_path+"*.parquet")
     #print(len(all_files))
-    total_lines = sum([count_one_parquet_file(file) for file in all_files])
-    print(f'Under %s: %d parquet objects with a total of %d data points, average %0.1f data points per contract.' %(file_path, len(all_files), total_lines, total_lines/len(all_files)))
+    if len(all_files)>0: 
+        total_lines = sum([count_one_parquet_file(file) for file in all_files])
+        print(f'Under %s: %d parquet objects with a total of %d data points, average %0.1f data points per contract.' %(file_path, len(all_files), total_lines, total_lines/len(all_files)))
+    else:
+        total_lines = 0
+    
     return total_lines 
 
 def count_empty_parquet_in_a_directory(file_path):

@@ -1198,3 +1198,9 @@ Email stored not sent on 2025-04-18 08:28:01.535431: Price Spike EURIBOR
 Spike found in prices for EURIBOR/20261200: need to manually check by running interactive_manual_check_historical_prices
 ********************************************************************************
 
+********************************************************************************
+Email stored not sent on 2025-04-26 00:21:16.484879: Price Spike WHEAT_ICE
+
+Spike found in prices for WHEAT_ICE/20250500: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+

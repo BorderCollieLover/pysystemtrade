@@ -194,7 +194,9 @@ class mtIBData(object):
             if not bars: 
                 break
             bar_length = len(bars)
-            print(bars)
+            #print(bars)
+            #April 25, 2025
+            ##The code below is to remove data points with future timestamps
             if formatDate==2:
                 bars = [bar for bar in bars if bar.date<datetime.datetime.now(timezone.utc)]
             else:

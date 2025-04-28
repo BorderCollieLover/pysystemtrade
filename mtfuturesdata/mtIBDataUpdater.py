@@ -8,7 +8,7 @@ import datetime
 import pytz
 import pandas as pd
 import pymongo
-from syscore.pandas.merge_data_keeping_past_data import merge_newer_data_no_checks, OLD_DATA_ONLY, NEW_DATA_ONLY, MERGED_DATA
+from syscore.pandas.merge_data_keeping_past_data import merge_newer_data_no_checks, OLD_DATA_ONLY, NEW_DATA_ONLY, MERGED_DATA, mergingDataWithStatus
 import os 
 from random import randint, shuffle
 from enum import Enum
@@ -21,7 +21,7 @@ HISTQUERY_YES = SendHistBarQuery.INQUIRED
 HISTQUERY_NO = SendHistBarQuery.NO
 
 
-WAIT_FOR_A_LONG_TIME = 12
+WAIT_FOR_A_LONG_TIME = 72
 TOO_MANY_FAILED_DOWNLOADS = 20
 
 class mtIBDataUpdater(mtIBData):
@@ -229,25 +229,44 @@ class mtIBDataUpdater(mtIBData):
             old_data = pd.DataFrame()
         new_data = ohlcv_data
         new_data.set_index('date', inplace=True)
-        
-        #print(old_data)
-        #print(new_data)
-        mergingDataWithStatus_obj = merge_newer_data_no_checks(old_data, new_data)
-        #print(mergingDataWithStatus_obj.merged_data)
-        merged_data = mergingDataWithStatus_obj.merged_data
-        #print(len(old_data))
+        #print(old_data.tail())
+        #print(new_data.tail())  
+        #print(len(old_data ))
         #print(len(new_data))
-        #print(len(merged_data))
-        #print(parquet_obj_file)
-        
+
+        ## April 25, 2025
+        ## This is where the merge happens in the parquet file. 
+        ## It doesn't, however, replace the old data in the parquet file if new data is found for the same datetime index
+        ## This is a problem because the downloading process might download partial data, particularly for daily data
+        ## Thus it is better to use the full_merge function to ensure that the old data is replaced with the new data
+        """ mergingDataWithStatus_obj = merge_newer_data_no_checks(old_data, new_data)
+        merged_data = mergingDataWithStatus_obj.merged_data
         if (mergingDataWithStatus_obj.status == MERGED_DATA) or (mergingDataWithStatus_obj.status == NEW_DATA_ONLY):
             msg = ("Updating (%s) with %s new data points " %(parquet_obj_file, str(len(merged_data)-len(old_data))))
-            #print('Updating ' + parquet_obj_file )
             print(msg)
             merged_data.to_parquet(parquet_obj_file)
+ """
+        #new code with replacing old data with new data
+        merged_data  = new_data.combine_first(old_data)
+        #print(len(old_data ))
+        #print(len(merged_data))
+        #print(old_data.tail())
+        #print(merged_data.tail())
+        #return(mergingDataWithStatus.only_old_data(old_data))
+        if (old_data.equals(merged_data)):
+            msg = ("No new data to update (%s) " %(parquet_obj_file))
+            print(msg)
+            return(mergingDataWithStatus.only_old_data(old_data))
+        else:
+            new_data_lines = len(merged_data)-len(old_data)
+            if new_data_lines > 0:
+                msg = ("Updating (%s) with %s new data points " %(parquet_obj_file, str(new_data_lines)))
+            else:
+                msg = ("Updating (%s) with new data points " %(parquet_obj_file))
+            merged_data.to_parquet(parquet_obj_file)
+            print(msg)
+            return(mergingDataWithStatus.only_new_data(merged_data))
 
-
-        return mergingDataWithStatus_obj
 
     def resolve_parquet_full_filename(self,contract, ts_collection_name):
         #the parquet object name for the raw data of a contract 
@@ -470,7 +489,9 @@ if __name__ == "__main__":
                     {'_id': 654503299, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20281215', 'localSymbol': 'ESZ8', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 4}, 
                     {'_id': 672387437, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20290316', 'localSymbol': 'ESH9', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0}, 
                     {'_id': 691171642, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20290615', 'localSymbol': 'ESM9', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 4}, 
-                    {'_id': 711280049, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20290921', 'localSymbol': 'ESU9', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 4}]
+                    {'_id': 711280049, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20290921', 'localSymbol': 'ESU9', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 4},
+                    {'_id': 712984914, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20250731', 'localSymbol': 'SR1N5', 'multiplier': '4167', 'secType': 'FUT', 'symbol': 'SOFR1', 'tradingClass': 'SR1', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0},
+    ] 
     test1_contracts = [
         {'_id': 495512563, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20251219', 'localSymbol': 'ESZ5', 'multiplier': '50', 'secType': 'FUT', 'symbol': 'ES', 'tradingClass': 'ES', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0}, 
         {'_id': 712984914, 'currency': 'USD', 'exchange': 'CME', 'lastTradeDateOrContractMonth': '20250731', 'localSymbol': 'SR1N5', 'multiplier': '4167', 'secType': 'FUT', 'symbol': 'SOFR1', 'tradingClass': 'SR1', 'most_recent_contract_tag': 2, 'min_multiplier_tag': 0, 'priority_tag': 2, 'ohlcv_error': 0},
@@ -482,7 +503,7 @@ if __name__ == "__main__":
     shuffle(all_contracts)                                                                      
     
     #for contract in all_contracts:
-    for contract in test_contracts:
+    for contract in test_contracts[:5]:
         #print(contract)
         test.Update_Contract_for_Frequency(contract, useRTH=False)
         test.Update_Contract_for_Frequency(contract, useRTH=False, barSizeSetting='15 mins')

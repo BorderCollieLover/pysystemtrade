@@ -4,10 +4,10 @@ cd /mnt/sda1/pysystemtrade
 source .venv/bin/activate
 python mtfuturesdata/multiprocessingtest.py&
 sleep 100
-python mtfuturesdata/1day.py&
+#python mtfuturesdata/1day.py&
 sleep 100
-python mtfuturesdata/1hour.py& 
+#python mtfuturesdata/1hour.py& 
 sleep 100
-python mtfuturesdata/15min.py& 
+#python mtfuturesdata/15min.py& 
 sleep 100
-python mtfuturesdata/5min.py&
+#python mtfuturesdata/5min.py&

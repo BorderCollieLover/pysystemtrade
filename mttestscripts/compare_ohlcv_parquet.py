@@ -10,8 +10,10 @@ import pandas as pd
 
 #filename = 'CLM5_256019308'
 #bar_setting_folder = 'RTH_1_day'
-filename = 'RCK5_656391483'
-bar_setting_folder = 'CTH_5_mins'
+filename = 'FMEP 20240402 D_693594949'
+bar_setting_folder = 'RTH_1_day'
+#filename = 'EBMH4_476339836'
+#bar_setting_folder = 'CTH_5_mins'
 
 
 path_new = '/mnt/sda1/data/parquet/ib/'

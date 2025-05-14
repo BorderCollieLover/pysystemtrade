@@ -233,13 +233,19 @@ class mtIBData(object):
 
             #When updating previously downloaded data, startDateTime should be the datetime of the last downloaded data point
             #startDate
+            #April 30, 2025
+            #Min Tang
+            #To further address the issue of partial data retrieval before close of the day/hour, 
+            #Maybe use >= instead of > in the if statement below
+            #Later the combine_first method will be used to combine the new data with the existing data, which will remove the duplicates and use the data downloaded later to replace the existing data 
+            #Which will be 'more' correct with regard to the time of data retrieval
             if useStartDateTime:
                 #print(startdt)
                 #print(type(startdt))
                 if (barSizeSetting == '1 day'):
-                    new_bars = [bar for bar in bars if datetime.datetime(bar.date.year, bar.date.month, bar.date.day)>startdt]
+                    new_bars = [bar for bar in bars if datetime.datetime(bar.date.year, bar.date.month, bar.date.day)>=startdt]
                 else:
-                    new_bars = [bar for bar in bars if bar.date>startdt]
+                    new_bars = [bar for bar in bars if bar.date>=startdt]
                 if len(new_bars) < 1: 
                     break
                 else: 

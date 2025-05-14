@@ -51,6 +51,24 @@ def get_effective_contracts_for_frequency(useRTH=True, barSizeSetting='1 day'):
     print(len(effective_contracts))
     return(effective_contracts)
 
+def get_unsampled_contracts_for_frequency(useRTH=True, barSizeSetting='1 day'):
+    [ts_coll_name, ts_meta_name] = ensure_collection(useRTH, barSizeSetting)
+    contracts = get_all_ib_contracts()
+
+    config = Config()
+    config = get_production_config()
+    testClient=pymongo.MongoClient(host=config.get_element("mongo_host"), port=config.get_element("mongo_port"))
+    testDB = testClient[config.get_element("mongo_ib_data_db")]
+    testColl = testDB[ts_meta_name]
+    docs = list(testColl.find({'ohlcv_error': {'$gt': 0 }} and {'ohlcv_error': {'$lte': TOO_MANY_FAILED_DOWNLOADS }} ))
+    print(len(docs))
+    docs = list(testColl.find({'ohlcv_error': {'$gt': 0 }} and {'ohlcv_error': {'$lte': TOO_MANY_FAILED_DOWNLOADS }} and  {'latest_datetime': {'$exists': False}}))
+    ids = [doc['_id'] for doc in docs]
+    unsampled_contracts = [{'contract': contract, 'useRTH': useRTH, 'barSizeSetting': barSizeSetting} for contract in contracts if contract['_id'] in ids]
+    print(len(unsampled_contracts))
+    return(unsampled_contracts)
+    
+
 def get_all_effective_contracts():
     frequencies = [
             {'useRTH': False, 'barSizeSetting': '1 hour'},
@@ -65,15 +83,36 @@ def get_all_effective_contracts():
         effect_contracts = effect_contracts + contracts
     return effect_contracts
 
+def get_all_unsampled_contracts():
+    frequencies = [
+            {'useRTH': False, 'barSizeSetting': '1 hour'},
+            {'useRTH': False, 'barSizeSetting': '15 mins'},
+            {'useRTH': False, 'barSizeSetting': '5 mins'},
+            {'useRTH': True, 'barSizeSetting': '1 day'}
+        ]
+    unsampled_contracts = []
+
+    for freq in frequencies:
+        contracts = get_unsampled_contracts_for_frequency(**freq)
+        unsampled_contracts = unsampled_contracts + contracts
+    return unsampled_contracts
+
 if __name__ == "__main__": 
+    unsampled_contracts = get_all_unsampled_contracts()
+    print(len(unsampled_contracts))
+    #print(unsampled_contracts[:10])
+    #exit(0)
+
     multiprocessing.set_start_method("spawn")
     #contracts = get_all_ib_contracts()
     effective_contracts = get_all_effective_contracts()
     print(len(effective_contracts))
     i = 0 
     while True:
-        shuffle(effective_contracts)
         old_data_count = count_all()
+        shuffle (unsampled_contracts)
+        update_all_ohlcv_contracts(unsampled_contracts)        
+        shuffle(effective_contracts)
         update_all_ohlcv_contracts(effective_contracts)        
         new_data_count = count_all()
         retrieved_data_points = new_data_count- old_data_count

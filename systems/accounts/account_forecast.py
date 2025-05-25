@@ -308,11 +308,10 @@ def pandl_for_position(
     capital: float = ARBITRARY_FORECAST_CAPITAL,
     fx=arg_not_supplied,
     daily_returns_volatility: pd.Series = arg_not_supplied,
-        SR_cost=0.0,
+    SR_cost=0.0,
     delayfill=True,
     value_per_point=ARBITRARY_VALUE_OF_PRICE_POINT,
 ) -> accountCurve:
-
     pandl_calculator = pandlCalculationWithSRCosts(
         price,
         SR_cost=SR_cost,

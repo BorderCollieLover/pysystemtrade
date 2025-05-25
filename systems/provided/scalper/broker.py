@@ -2,40 +2,46 @@ import datetime
 from dataclasses import dataclass
 from typing import Tuple, List
 
-from build.lib.sysexecution.algos.common_functions import cancel_order
-from private.projects.MR_2025.components import Order, Fill, FillAndOrder
-from private.projects.MR_2025.configuration import STRATEGY_NAME
+from sysexecution.algos.common_functions import cancel_order
+from systems.provided.scalper.components import Order, Fill, FillAndOrder
+from systems.provided.scalper.configuration import STRATEGY_NAME
 from sysdata.data_blob import dataBlob
 from sysexecution.algos.algo import Algo
 from sysexecution.order_stacks.broker_order_stack import orderWithControls
-from sysexecution.orders.broker_orders import create_new_broker_order_from_contract_order, stop_loss_order_type, \
-    limit_order_type
+from sysexecution.orders.broker_orders import (
+    create_new_broker_order_from_contract_order,
+    stop_loss_order_type,
+    limit_order_type,
+)
 from sysexecution.orders.contract_orders import contractOrder
 from sysexecution.orders.named_order_objects import missing_order
 from sysobjects.contracts import futuresContract
-from sysobjects.production.positions import listOfContractPositions, contractPosition
 from sysproduction.data.broker import dataBroker
+
 
 @dataclass
 class OrderAndOrderWithControls:
     order: Order
     order_with_controls: orderWithControls
 
-class BrokerController():
+
+class BrokerController:
     def __init__(self, data: dataBlob, futures_contract: futuresContract):
-        self.data =data
+        self.data = data
         self.futures_contract = futures_contract
 
     def create_limit_order(self, order: Order):
         ## We don't bother databasing orders until executed
 
-        contract_order = get_contract_order_from_simple_order(order=order, futures_contract=self.futures_contract)
+        contract_order = get_contract_order_from_simple_order(
+            order=order, futures_contract=self.futures_contract
+        )
         algo_instance = StrippedDownAlgo(data=self.data, contract_order=contract_order)
         broker, broker_account, broker_clientid = self.get_broker_details()
         placed_broker_order_with_controls = algo_instance.submit_mr_trade(
             broker_account=broker_account,
             broker=broker,
-            broker_clientid=broker_clientid
+            broker_clientid=broker_clientid,
         )
 
         if placed_broker_order_with_controls is missing_order:
@@ -43,30 +49,48 @@ class BrokerController():
             return missing_order
 
         ## store the placed broker order for future reference
-        self.add_order_to_storage(OrderAndOrderWithControls(
-            order=order,
-            order_with_controls=placed_broker_order_with_controls
-        ))
+        self.add_order_to_storage(
+            OrderAndOrderWithControls(
+                order=order, order_with_controls=placed_broker_order_with_controls
+            )
+        )
 
         return order
 
     def cancel_all_orders(self):
-        while len(self.order_storage)>0:
+        while len(self.order_storage) > 0:
             order_and_placed_broker_order_with_controls = self.order_storage.pop()
-            cancel_order(self.data, order_and_placed_broker_order_with_controls.order_with_controls)
+            cancel_order(
+                self.data,
+                order_and_placed_broker_order_with_controls.order_with_controls,
+            )
 
+    def check_for_position_match(
+        self, position: int, futures_contract: futuresContract
+    ) -> bool:
+        broker_contract_positions = (
+            self.data_broker.get_all_current_contract_positions()
+        )
+        broker_position = broker_contract_positions.position_in_contract(
+            futures_contract=futures_contract
+        )
 
-    def check_for_position_match(self, position: int, futures_contract: futuresContract) -> bool:
-        broker_contract_positions = self.data_broker.get_all_current_contract_positions()
-        broker_position = broker_contract_positions.position_in_contract(futures_contract=futures_contract)
+        return int(broker_position) == int(position)
 
-        return int(broker_position)==int(position)
+    def check_for_position_match_msg(
+        self, position: int, futures_contract: futuresContract
+    ) -> str:
+        broker_contract_positions = (
+            self.data_broker.get_all_current_contract_positions()
+        )
+        broker_position = broker_contract_positions.position_in_contract(
+            futures_contract=futures_contract
+        )
 
-    def check_for_position_match_msg(self, position: int, futures_contract: futuresContract) -> str:
-        broker_contract_positions = self.data_broker.get_all_current_contract_positions()
-        broker_position = broker_contract_positions.position_in_contract(futures_contract=futures_contract)
-
-        return "Break: Broker position %d, our position from state %d" % (broker_position, position)
+        return "Break: Broker position %d, our position from state %d" % (
+            broker_position,
+            position,
+        )
 
     def get_fills_from_broker(self) -> List[FillAndOrder]:
         list_of_fills_and_orders = []
@@ -76,17 +100,19 @@ class BrokerController():
             order_with_controls.update_order()
             if order_with_controls.completed():
                 filled_price = order_with_controls.order.filled_price
-                filled_qty = order_with_controls.order.fill.as_single_trade_qty_or_error()
+                filled_qty = (
+                    order_with_controls.order.fill.as_single_trade_qty_or_error()
+                )
                 fill = Fill(price=filled_price, size=filled_qty)
 
                 order_storage.remove(order_and_order_with_controls)
-                print("%s filled at %f" % (str(order_and_order_with_controls.order), filled_price))
-                list_of_fills_and_orders.append(
-                        FillAndOrder(
-                            fill=fill,
-                        order=order_and_order_with_controls.order)
+                print(
+                    "%s filled at %f"
+                    % (str(order_and_order_with_controls.order), filled_price)
                 )
-
+                list_of_fills_and_orders.append(
+                    FillAndOrder(fill=fill, order=order_and_order_with_controls.order)
+                )
 
         return list_of_fills_and_orders
 
@@ -108,43 +134,48 @@ class BrokerController():
 
         return details
 
-    def get_broker_details(self) -> Tuple[str,str,str]:
+    def get_broker_details(self) -> Tuple[str, str, str]:
         broker = self.data_broker.get_broker_name()
         broker_account = self.data_broker.get_broker_account()
         broker_clientid = str(self.data_broker.get_broker_clientid())
 
         return broker, broker_account, broker_clientid
 
-
     @property
     def data_broker(self):
         return dataBroker(self.data)
 
-def get_contract_order_from_simple_order(order: Order, futures_contract: futuresContract):
+
+def get_contract_order_from_simple_order(
+    order: Order, futures_contract: futuresContract
+):
     if order.stop_loss:
         order_type = stop_loss_order_type
     else:
         order_type = limit_order_type
 
-    contract_order = contractOrder(STRATEGY_NAME, futures_contract.instrument.instrument_code,
-                                   futures_contract.contract_date.date_str,
-                                   order.size, limit_price=order.level,
-                                   order_type=order_type,
-                                   order_id=1,  ## pseduo get replaced later
-                                   parent=1,
-                                   reference_price=None,
-                                   generated_datetime=datetime.datetime.now(),
-                                   algo_to_use="MR_stripped_down_algo",
-                                   reference_of_controlling_algo="MR_stripped_down_algo",
-
-                                   )
+    contract_order = contractOrder(
+        STRATEGY_NAME,
+        futures_contract.instrument.instrument_code,
+        futures_contract.contract_date.date_str,
+        order.size,
+        limit_price=order.level,
+        order_type=order_type,
+        order_id=1,  ## pseduo get replaced later
+        parent=1,
+        reference_price=None,
+        generated_datetime=datetime.datetime.now(),
+        algo_to_use="MR_stripped_down_algo",
+        reference_of_controlling_algo="MR_stripped_down_algo",
+    )
 
     return contract_order
 
-class StrippedDownAlgo(Algo):
 
-    def submit_mr_trade(self,
-                        broker:str, broker_account:str, broker_clientid:str) -> orderWithControls:
+class StrippedDownAlgo(Algo):
+    def submit_mr_trade(
+        self, broker: str, broker_account: str, broker_clientid: str
+    ) -> orderWithControls:
         """
 
         :return: broker order with control  or missing_order
@@ -185,4 +216,3 @@ class StrippedDownAlgo(Algo):
         )
 
         return placed_broker_order_with_controls
-

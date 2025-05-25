@@ -4,7 +4,7 @@ from ib_insync.order import (
     LimitOrder as ibLimitOrder,
     Trade as ibTrade,
     Order as ibOrder,
-StopOrder as ibStopOrder
+    StopOrder as ibStopOrder,
 )
 
 from syscore.exceptions import missingContract
@@ -28,7 +28,7 @@ from sysexecution.orders.broker_orders import (
     snap_mid_type,
     snap_prim_type,
     adaptive_mkt_type,
-    stop_loss_order_type
+    stop_loss_order_type,
 )
 
 from sysobjects.contracts import futuresContract

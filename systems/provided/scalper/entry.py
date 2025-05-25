@@ -2,10 +2,18 @@ from time import sleep
 
 import numpy as np
 import pickle
-from private.projects.MR_2025.broker import  BrokerController
-from private.projects.MR_2025.configuration import SECONDS_PER_UNIT, BARS_REQUIRED_FOR_ESTIMATION, \
-    StratParameters, init_paramaters, display_diags, interactively_modify_parameters, TIME_BETWEEN_HEARTBEATS, \
-    estimate_R_from_prices, get_final_price
+from systems.provided.scalper.broker import BrokerController
+from systems.provided.scalper.configuration import (
+    SECONDS_PER_UNIT,
+    BARS_REQUIRED_FOR_ESTIMATION,
+    StratParameters,
+    init_paramaters,
+    display_diags,
+    interactively_modify_parameters,
+    TIME_BETWEEN_HEARTBEATS,
+    estimate_R_from_prices,
+    get_final_price,
+)
 from syscore.constants import arg_not_supplied
 from syscore.exceptions import marketClosed
 from syscore.interactive.progress_bar import progressBar
@@ -14,7 +22,13 @@ from sysproduction.data.broker import dataBroker
 from sysproduction.data.contracts import dataContracts
 from sysproduction.data.instruments import diagInstruments
 
-from private.projects.MR_2025.components import State, action_given_current_state, ActionFromState, FillAndOrder, Fill
+from systems.provided.scalper.components import (
+    State,
+    action_given_current_state,
+    ActionFromState,
+    FillAndOrder,
+    Fill,
+)
 from sysexecution.orders.named_order_objects import missing_order
 from sysproduction.data.currency_data import dataCurrency
 import datetime
@@ -31,11 +45,14 @@ from sysproduction.data.prices import diagPrices
 ## WRITE ORDERS TO DB IN QUIET PERIODS
 ## RATIO OF R, CHECK HORIZON SOMEHOW (WITH MORE DATA)
 
-class MRRunner():
-    def __init__(self,  instrument: str):
+
+class MRRunner:
+    def __init__(self, instrument: str):
         self.data = dataBlob()
         self.set_instrument(instrument)
-        self._broker_controller = BrokerController(self.data, futures_contract=self.futures_contract)
+        self._broker_controller = BrokerController(
+            self.data, futures_contract=self.futures_contract
+        )
 
     def start(self):
         okay_to_start = pre_start_checks_okay_to_start(self)
@@ -48,7 +65,9 @@ class MRRunner():
         self.wait_then_run()
 
     def wait_then_run(self):
-        position_matches = self.broker_controller.check_for_position_match(0, self.futures_contract_with_actual_expiry)
+        position_matches = self.broker_controller.check_for_position_match(
+            0, self.futures_contract_with_actual_expiry
+        )
         if not position_matches:
             print("Can't start, position doesn't match - fix before restarting")
             exit()
@@ -58,7 +77,7 @@ class MRRunner():
         while not_okay:
             okay_to_start = self.okay_to_start_trading()
             if okay_to_start:
-                not_okay=False
+                not_okay = False
             else:
                 self.heartbeat("Waiting to start trading")
                 sleep(5)
@@ -73,7 +92,10 @@ class MRRunner():
                 self.heartbeat()
                 self.update_state_from_broker()
 
-                if self.state.flat_with_no_orders() and not self.okay_to_open_new_orders():
+                if (
+                    self.state.flat_with_no_orders()
+                    and not self.okay_to_open_new_orders()
+                ):
                     break
 
                 if self.broker_state_matches():
@@ -86,13 +108,15 @@ class MRRunner():
 
     def update_state_from_broker(self):
         list_of_fills_and_orders = self.broker_controller.get_fills_from_broker()
-        if len(list_of_fills_and_orders)==0:
+        if len(list_of_fills_and_orders) == 0:
             return
         else:
             print("Fills received from broker %s" % str(list_of_fills_and_orders))
             self.update_state_from_broker_when_fills_exist(list_of_fills_and_orders)
 
-    def update_state_from_broker_when_fills_exist(self, list_of_fills_and_orders: List[FillAndOrder]):
+    def update_state_from_broker_when_fills_exist(
+        self, list_of_fills_and_orders: List[FillAndOrder]
+    ):
         for fill_and_order in list_of_fills_and_orders:
             self.update_state_given_fill_and_order(fill_and_order)
 
@@ -106,7 +130,7 @@ class MRRunner():
         new_state = current_state.update_given_broker_fill_and_latest_price(
             fill=fill_and_order.fill,
             order=fill_and_order.order,
-            current_price=current_price
+            current_price=current_price,
         )
         print("New state %s" % new_state)
         self.update_state_and_list_of_states(new_state)
@@ -118,12 +142,21 @@ class MRRunner():
 
     def save_history(self):
         print("Saving states, fills and orders")
-        data_to_save = dict(list_of_states = self.list_of_states, fills_and_orders = self.complete_fills_and_orders)
-        with open('/home/rob/temp/mrfile_%s_%s' % (str(datetime.date.today()), self.instrument), 'wb') as f:
-            pickle.dump(data_to_save, f) ## ignore stupid pycharm error
+        data_to_save = dict(
+            list_of_states=self.list_of_states,
+            fills_and_orders=self.complete_fills_and_orders,
+        )
+        with open(
+            "/home/rob/temp/mrfile_%s_%s"
+            % (str(datetime.date.today()), self.instrument),
+            "wb",
+        ) as f:
+            pickle.dump(data_to_save, f)  ## ignore stupid pycharm error
 
     def broker_state_matches(self):
-        position_matches = self.broker_controller.check_for_position_match(self.state.position, self.futures_contract_with_actual_expiry)
+        position_matches = self.broker_controller.check_for_position_match(
+            self.state.position, self.futures_contract_with_actual_expiry
+        )
 
         return position_matches
 
@@ -131,7 +164,7 @@ class MRRunner():
         action = action_given_current_state(
             current_state=self.state,
             current_price_getter=self.current_mid_price_blocking,
-            R_calculator=self.estimate_of_R_range_with_min_and_max_applied
+            R_calculator=self.estimate_of_R_range_with_min_and_max_applied,
         )
 
         if action.is_no_action:
@@ -161,7 +194,6 @@ class MRRunner():
 
         return action
 
-
     def finished(self):
         self.cancel_all_orders_and_update_state_when_finished()
         self.save_history()
@@ -182,14 +214,26 @@ class MRRunner():
         max_R = self.strategy_parameters.max_R
         use_R = max([min([empirical_R, max_R]), min_R])
 
-        print("Using R %f, estimate %f, max %f, min %f", (use_R, empirical_R, max_R, min_R))
+        print(
+            "Using R %f, estimate %f, max %f, min %f",
+            (use_R, empirical_R, max_R, min_R),
+        )
 
         return use_R
 
     def estimate_of_R_range_blocking(self):
-        print("getting R may take %d seconds" % ((1+BARS_REQUIRED_FOR_ESTIMATION )* self.strategy_parameters.horizon_seconds))
+        print(
+            "getting R may take %d seconds"
+            % (
+                (1 + BARS_REQUIRED_FOR_ESTIMATION)
+                * self.strategy_parameters.horizon_seconds
+            )
+        )
 
-        self.set_progress((1+BARS_REQUIRED_FOR_ESTIMATION )* self.strategy_parameters.horizon_seconds)
+        self.set_progress(
+            (1 + BARS_REQUIRED_FOR_ESTIMATION)
+            * self.strategy_parameters.horizon_seconds
+        )
         last_few_bar_ranges = self.get_minimum_number_of_bar_ranges_blocking()
         self.clear_progress()
         print("")
@@ -198,9 +242,11 @@ class MRRunner():
 
     def get_minimum_number_of_bar_ranges_blocking(self):
         bar_count = 0
-        bar_ranges_excluding_last=pd.Series() ## avoid python warning
+        bar_ranges_excluding_last = pd.Series()  ## avoid python warning
 
-        while bar_count < (BARS_REQUIRED_FOR_ESTIMATION):  ## need one extra as last one is live
+        while bar_count < (
+            BARS_REQUIRED_FOR_ESTIMATION
+        ):  ## need one extra as last one is live
             bar_ranges = self.get_bar_ranges()
             bar_ranges_excluding_last = bar_ranges[:-1]
             bar_count = len(bar_ranges_excluding_last)
@@ -213,7 +259,9 @@ class MRRunner():
             return ts_list
         ts_list_resampled_unit = ts_list.resample("%ds" % SECONDS_PER_UNIT).ffill()
         ts_list_resampled_unit = ts_list_resampled_unit.dropna()
-        resample_to = "%ds" % self.strategy_parameters.horizon_seconds * horizon_multiplier
+        resample_to = (
+            "%ds" % self.strategy_parameters.horizon_seconds * horizon_multiplier
+        )
         r_min = ts_list_resampled_unit.resample(resample_to).min()
         r_max = ts_list_resampled_unit.resample(resample_to).max()
 
@@ -246,15 +294,19 @@ class MRRunner():
 
         return self.update_and_return_time_series_of_unit_samples_without_checks()
 
-    def update_and_return_time_series_of_unit_samples_without_checks(self) -> pd.DataFrame:
+    def update_and_return_time_series_of_unit_samples_without_checks(
+        self,
+    ) -> pd.DataFrame:
         if self.progress is not None:
             self.progress.iterate()
         tick = self.next_tick()
         mid_price = np.mean([tick.ask_price, tick.bid_price])
-        new_item = pd.Series([mid_price], index=pd.DatetimeIndex([datetime.datetime.now()]))
+        new_item = pd.Series(
+            [mid_price], index=pd.DatetimeIndex([datetime.datetime.now()])
+        )
 
         ts_list = self.ts_list_of_unit_samples
-        if len(ts_list)==0:
+        if len(ts_list) == 0:
             ts_list = new_item
         else:
             ts_list = pd.concat([ts_list, new_item])
@@ -285,7 +337,7 @@ class MRRunner():
         return self.data_broker.get_ticker_object_for_contract(contract)
 
     ### PROGRESS
-    def set_progress(self, length:int):
+    def set_progress(self, length: int):
         self._progress = progressBar(length)
 
     def clear_progress(self):
@@ -297,7 +349,7 @@ class MRRunner():
 
     ##HEARTBEATS
     def heartbeat(self, msg=arg_not_supplied):
-        if self.time_since_last_heartbeat()>TIME_BETWEEN_HEARTBEATS:
+        if self.time_since_last_heartbeat() > TIME_BETWEEN_HEARTBEATS:
             if msg is arg_not_supplied:
                 self.default_heartbeat_msg()
             else:
@@ -306,14 +358,25 @@ class MRRunner():
 
     def default_heartbeat_msg(self):
         mid_price = self.current_mid_price()
-        print("Current mid price %s, position %d, orders %s, running net p&l %f. Ctrl-C to abort and cancel orders." % (
-        mid_price, self.state.position, self.state.orders, self.state.pandl.net_pandl()))
+        print(
+            "Current mid price %s, position %d, orders %s, running net p&l %f. Ctrl-C to abort and cancel orders."
+            % (
+                mid_price,
+                self.state.position,
+                self.state.orders,
+                self.state.pandl.net_pandl(),
+            )
+        )
         if not self.broker_state_matches():
-            print("Position mismatch %s" % self.broker_controller.check_for_position_match_msg(self.state.position,
-                                                                                               self.futures_contract_with_actual_expiry))
+            print(
+                "Position mismatch %s"
+                % self.broker_controller.check_for_position_match_msg(
+                    self.state.position, self.futures_contract_with_actual_expiry
+                )
+            )
 
     def time_since_last_heartbeat(self):
-        diff= datetime.datetime.now() - self.last_heartbeat
+        diff = datetime.datetime.now() - self.last_heartbeat
         return diff.total_seconds()
 
     def reset_heartbeat(self):
@@ -336,12 +399,12 @@ class MRRunner():
         return self.data_broker.is_contract_okay_to_trade(self.futures_contract)
 
     def okay_to_trade(self):
-        current_horizon_in_hours = self.strategy_parameters.horizon_seconds/3600.0
+        current_horizon_in_hours = self.strategy_parameters.horizon_seconds / 3600.0
         try:
             market_nearly_closed = (
                 self.data_broker.less_than_N_hours_of_trading_left_for_contract(
                     self.futures_contract,
-                    N_hours=current_horizon_in_hours,## to be on safe side
+                    N_hours=current_horizon_in_hours,  ## to be on safe side
                 )
             )
         except marketClosed:
@@ -354,7 +417,7 @@ class MRRunner():
 
         daily_stop = -self.strategy_parameters.stoploss_ccy
         daily_loss = self.state.pandl.net_pandl()
-        stop_hit = daily_loss<daily_stop
+        stop_hit = daily_loss < daily_stop
         if stop_hit:
             print("DAILY STOP LOSS HIT")
 
@@ -364,16 +427,16 @@ class MRRunner():
         return not_too_late and stop_not_hit
 
     def too_late_to_open_new_orders(self):
-        current_horizon_in_hours = self.strategy_parameters.horizon_seconds/3600.0
+        current_horizon_in_hours = self.strategy_parameters.horizon_seconds / 3600.0
         try:
             too_late_to_open_new_orders = (
                 self.data_broker.less_than_N_hours_of_trading_left_for_contract(
                     self.futures_contract,
-                    N_hours=current_horizon_in_hours*3,## to be on safe side
+                    N_hours=current_horizon_in_hours * 3,  ## to be on safe side
                 )
             )
         except marketClosed:
-            too_late_to_open_new_orders=True
+            too_late_to_open_new_orders = True
 
         return too_late_to_open_new_orders
 
@@ -384,7 +447,7 @@ class MRRunner():
         self.complete_fills_and_orders = fills_and_orders
 
     @property
-    def complete_fills_and_orders(self) ->  List[FillAndOrder]:
+    def complete_fills_and_orders(self) -> List[FillAndOrder]:
         fills_and_orders = getattr(self, "_Fills_and_orders", [])
         return fills_and_orders
 
@@ -409,7 +472,7 @@ class MRRunner():
         return list_of_states
 
     @list_of_states.setter
-    def list_of_states(self, list_of_states:List[Tuple[State, datetime.datetime]]):
+    def list_of_states(self, list_of_states: List[Tuple[State, datetime.datetime]]):
         self._list_of_state = list_of_states
 
     @property
@@ -421,7 +484,6 @@ class MRRunner():
     @state.setter
     def state(self, state: State):
         self._state = state
-
 
     ## PARAMETERS
     @property
@@ -438,9 +500,13 @@ class MRRunner():
 
     def _get_parameters(self) -> StratParameters:
         instrument = self.instrument
-        commission_ccy = self.diag_instruments.get_cost_object(instrument).value_of_block_commission
+        commission_ccy = self.diag_instruments.get_cost_object(
+            instrument
+        ).value_of_block_commission
         multiplier = self.diag_instruments.get_point_size(instrument)
-        tick_size = self.data_broker.get_min_tick_size_for_contract(self.futures_contract)
+        tick_size = self.data_broker.get_min_tick_size_for_contract(
+            self.futures_contract
+        )
         slippage_ccy = self.diag_instruments.get_spread_cost(instrument)
         slippage_ticks = slippage_ccy / tick_size
         ccy = self.diag_instruments.get_currency(instrument)
@@ -452,22 +518,26 @@ class MRRunner():
             tick_size=tick_size,
             cancel_cost_ccy_C=commission_ccy,
             multiplier_M=multiplier,
-            slippage_ticks=slippage_ticks
+            slippage_ticks=slippage_ticks,
         )
 
     ## CONTRACT
     @property
     def futures_contract_with_actual_expiry(self) -> futuresContract:
-        contract = getattr(self, "_contract_actual_expiry",None)
+        contract = getattr(self, "_contract_actual_expiry", None)
         if contract is None:
-            contract = self._contract_actual_expiry = self.get_futures_contract_with_actual_expiry()
+            contract = (
+                self._contract_actual_expiry
+            ) = self.get_futures_contract_with_actual_expiry()
 
         return contract
 
     def get_futures_contract_with_actual_expiry(self):
         futures_contract = self.futures_contract
 
-        expiry = self.data_contracts.get_actual_expiry(futures_contract.instrument_code, futures_contract.contract_date).as_str()
+        expiry = self.data_contracts.get_actual_expiry(
+            futures_contract.instrument_code, futures_contract.contract_date
+        ).as_str()
 
         return futuresContract(futures_contract.instrument_code, expiry)
 
@@ -475,20 +545,18 @@ class MRRunner():
     def futures_contract(self) -> futuresContract:
         contract = getattr(self, "_contract", None)
         if contract is None:
-            contract = self._contract  = self.get_futures_contract()
+            contract = self._contract = self.get_futures_contract()
 
         return contract
 
-
     def get_futures_contract(self) -> futuresContract:
-
         data_contracts = self.data_contracts
 
         priced_contract_date = data_contracts.get_priced_contract_id(self.instrument)
 
-        return futuresContract(instrument_object=self.instrument, contract_date_object=priced_contract_date)
-
-
+        return futuresContract(
+            instrument_object=self.instrument, contract_date_object=priced_contract_date
+        )
 
     @property
     def instrument(self):
@@ -523,62 +591,52 @@ class MRRunner():
     def data_prices(self):
         return diagPrices(self.data)
 
+
 def pre_start_checks_okay_to_start(custom_mr: MRRunner):
     strategy_parameters = custom_mr.strategy_parameters
     strategy_parameters = init_paramaters(strategy_parameters)
     not_ready = True
-    print("Pre start check up:  %s %s with %s" % (
-        str(custom_mr.data.mongo_db), str(custom_mr.data_broker.get_broker_name()), custom_mr.futures_contract))
-    final_price =get_final_price(custom_mr.data_prices,
-                                        futures_contract=custom_mr.futures_contract)
+    print(
+        "Pre start check up:  %s %s with %s"
+        % (
+            str(custom_mr.data.mongo_db),
+            str(custom_mr.data_broker.get_broker_name()),
+            custom_mr.futures_contract,
+        )
+    )
+    final_price = get_final_price(
+        custom_mr.data_prices, futures_contract=custom_mr.futures_contract
+    )
     while not_ready:
-        starting_R = estimate_R_from_prices(custom_mr.data_prices, horizon=strategy_parameters.horizon_seconds,
-                                            futures_contract=custom_mr.futures_contract)
-        display_diags(parameters=strategy_parameters, starting_R=starting_R, price=final_price)
-        the_input = input("Go with these parameters (y/Y/yes/Yes/YES), input different ones (n/N/no/No/NO), or abort and exit (other)")
+        starting_R = estimate_R_from_prices(
+            custom_mr.data_prices,
+            horizon=strategy_parameters.horizon_seconds,
+            futures_contract=custom_mr.futures_contract,
+        )
+        display_diags(
+            parameters=strategy_parameters, starting_R=starting_R, price=final_price
+        )
+        the_input = input(
+            "Go with these parameters (y/Y/yes/Yes/YES), input different ones (n/N/no/No/NO), or abort and exit (other)"
+        )
 
-        if len(the_input)==0:
+        if len(the_input) == 0:
             return False
 
         the_input = the_input.lower()[0]
-        if the_input=="y":
-            custom_mr.strategy_parameters =strategy_parameters
+        if the_input == "y":
+            custom_mr.strategy_parameters = strategy_parameters
             return True
-        elif the_input=="n":
+        elif the_input == "n":
             strategy_parameters = interactively_modify_parameters(strategy_parameters)
-            custom_mr.strategy_parameters =strategy_parameters
+            custom_mr.strategy_parameters = strategy_parameters
         else:
             return False
 
 
-if __name__ == '__main__':
-    if len(sys.argv)<2:
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
         raise Exception("Need to pass instrument code")
     instrument = sys.argv[1]
     custom = MRRunner(instrument=instrument)
     custom.start()
-
-
-"""
-from private.projects.MR_2025.entry import *
-instrument="NASDAQ"
-self = MRRunner(instrument)
-self.setup(instrument)
-action = action_given_current_state(
-    current_state=self.state,
-    current_price_getter=self.current_mid_price_blocking,
-    R_calculator=self.estimate_of_R_range
-)
-new_state = self.state.update_from_action(action)
-self.update_state_and_list_of_states(new_state)
-list_of_fills_and_orders = [FillAndOrder(fill=Fill(size=-1, price=23406), order=new_state.orders[0])]
-current_price = self.current_mid_price()
-for fill_and_order in list_of_fills_and_orders:
-    new_state = self.state.update_given_broker_fill_and_latest_price(
-        fill=fill_and_order.fill,
-        order=fill_and_order.order,
-        current_price=current_price
-    )
-self.update_state_and_list_of_states(new_state)
-"""
-

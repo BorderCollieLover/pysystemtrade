@@ -7,21 +7,23 @@ from glob import glob
 from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData
 from sysdata.parquet.parquet_access import ParquetAccess
 from sysproduction.data.prices import diagPrices
+from sysinit.futures.multipleprices_from_db_prices_and_csv_calendars_to_db import process_multiple_prices_single_instrument
+
 
 
 def create_tmp_directories_for_update_roll_calendars():
-    roll_calendars_from_arctic = os.path.join('data', 'futures', 'roll_calendars_from_arctic')
-    if not os.path.exists(roll_calendars_from_arctic):
-        os.makedirs(roll_calendars_from_arctic)
+    roll_calendars_from_db = os.path.join('data', 'futures', 'roll_calendars_from_db')
+    if not os.path.exists(roll_calendars_from_db):
+        os.makedirs(roll_calendars_from_db)
 
-    multiple_prices_from_arctic = os.path.join('data', 'futures', 'multiple_from_arctic')
-    if not os.path.exists(multiple_prices_from_arctic):
-        os.makedirs(multiple_prices_from_arctic)
+    multiple_prices_from_db = os.path.join('data', 'futures', 'multiple_from_db')
+    if not os.path.exists(multiple_prices_from_db):
+        os.makedirs(multiple_prices_from_db)
 
     spliced_multiple_prices = os.path.join('data', 'futures', 'multiple_prices_csv_spliced')
     if not os.path.exists(spliced_multiple_prices):
         os.makedirs(spliced_multiple_prices)
-    return(roll_calendars_from_arctic, multiple_prices_from_arctic, spliced_multiple_prices)
+    return(roll_calendars_from_db, multiple_prices_from_db, spliced_multiple_prices)
 
 #what I need to do is to create a temporary data directory to store futures contract price parquet files only for updating the existing roll calendar
 #to do that, I need to: 
@@ -107,7 +109,7 @@ def test_parquet_futures_code():
 #Build all temporary roll calendars: 
 if __name__ == "__main__":
 
-    roll_calendars_from_arctic, multiple_prices_from_arctic, spliced_multiple_prices = create_tmp_directories_for_update_roll_calendars()
+    roll_calendars_from_db, multiple_prices_from_db, spliced_multiple_prices = create_tmp_directories_for_update_roll_calendars()
 
     tmp_futures_contract_price_parquets, tmp_futures_contract_price_parquets_contract_collection = prepare_tmp_futures_contract_parquets_folder_for_updating_roll_calendars()
     copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_price_parquets_contract_collection)
@@ -131,7 +133,10 @@ if __name__ == "__main__":
         try:
             #...
             #print(instrument)
-            build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_arctic,check_before_writing=False)
+            build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
         except Exception as e: 
             print(e)
+
+        process_multiple_prices_single_instrument(instrument, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)
+
 

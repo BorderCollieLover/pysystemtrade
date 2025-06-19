@@ -21,8 +21,8 @@ HISTQUERY_YES = SendHistBarQuery.INQUIRED
 HISTQUERY_NO = SendHistBarQuery.NO
 
 
-WAIT_FOR_A_LONG_TIME = 24
-TOO_MANY_FAILED_DOWNLOADS = 20
+WAIT_FOR_A_LONG_TIME = 12
+TOO_MANY_FAILED_DOWNLOADS = 25
 
 class mtIBDataUpdater(mtIBData):
     def __init__(self):
@@ -125,7 +125,7 @@ class mtIBDataUpdater(mtIBData):
                                                                                useRTH = useRTH, 
                                                                                barSizeSetting = barSizeSetting)
         self.update_ts_data(contract, ohlcv_data, ts_collection_name, ts_meta_name, contract_expired, barSizeSetting)
-        sleep(randint(0,150)/150) #pacing 
+        sleep(randint(0,150)/100) #pacing 
         return
     
     def update_ts_data(self, contract, ohlcv_data, ts_collection_name, ts_meta_name, contract_expired, barSizeSetting):

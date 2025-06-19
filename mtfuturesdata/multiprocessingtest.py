@@ -8,6 +8,7 @@ import pymongo
 from datetime import datetime
 from mtfuturesdata.count_parquet_data import count_all
 
+number_of_processes = 8
 #A multiprocessing setup in PST, the basic example in this code works ok
 mtIBDataUpdater_instance = None
 def set_global_dataupdater_instance():
@@ -32,7 +33,7 @@ def update_all_ohlcv_contracts_serial(contracts):
     return retrieved_data_points
 
 def update_all_ohlcv_contracts(contracts):
-    with multiprocessing.get_context("spawn").Pool(initializer=set_global_dataupdater_instance, processes=4) as pool:
+    with multiprocessing.get_context("spawn").Pool(initializer=set_global_dataupdater_instance, processes=number_of_processes) as pool:
         pool.map(update_ohlcv, contracts)
     pool.join()
 
@@ -98,8 +99,8 @@ def get_all_unsampled_contracts():
     return unsampled_contracts
 
 if __name__ == "__main__": 
-    unsampled_contracts = get_all_unsampled_contracts()
-    print(len(unsampled_contracts))
+    #unsampled_contracts = get_all_unsampled_contracts()
+    #print(len(unsampled_contracts))
     #print(unsampled_contracts[:10])
     #exit(0)
 
@@ -110,8 +111,8 @@ if __name__ == "__main__":
     i = 0 
     while True:
         old_data_count = count_all()
-        shuffle (unsampled_contracts)
-        update_all_ohlcv_contracts(unsampled_contracts)        
+        #shuffle (unsampled_contracts)
+        #update_all_ohlcv_contracts(unsampled_contracts)        
         shuffle(effective_contracts)
         update_all_ohlcv_contracts(effective_contracts)        
         new_data_count = count_all()

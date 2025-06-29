@@ -8,8 +8,8 @@ def count_one_parquet_file(parquet_obj):
         data = pd.read_parquet(parquet_obj)
         return(len(data))
     except Exception as e: 
-        return(0)
         print(e)
+        return(0)
 
 def count_parquet_in_a_directory(file_path):
     #print(file_path)

@@ -2122,3 +2122,21 @@ Email stored not sent on 2025-06-29 01:33:50.140180: Price Spike CRUDE_W
 Spike found in prices for CRUDE_W/20260100: need to manually check by running interactive_manual_check_historical_prices
 ********************************************************************************
 
+********************************************************************************
+Email stored not sent on 2025-06-30 01:26:49.271220: Price Spike SOFR
+
+Spike found in prices for SOFR/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-06-30 01:27:05.043972: Price Spike SOFR
+
+Spike found in prices for SOFR/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-04 01:24:15.759524: Price Spike EUA
+
+Spike found in prices for EUA/20270300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+

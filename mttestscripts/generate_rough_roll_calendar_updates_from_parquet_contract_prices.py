@@ -10,6 +10,7 @@ from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesCo
 from sysdata.parquet.parquet_access import ParquetAccess
 from sysproduction.data.prices import diagPrices
 from sysinit.futures.multipleprices_from_db_prices_and_csv_calendars_to_db import process_multiple_prices_single_instrument
+from mttestscripts.files_tool import list_all_instruments_from_a_directory, backup_one_folder
 
 
 
@@ -30,8 +31,74 @@ def create_tmp_directories_for_update_roll_calendars():
     if not os.path.exists(patched_roll_calendars):
         os.makedirs(patched_roll_calendars)
     return(roll_calendars_from_db, multiple_prices_from_db, spliced_multiple_prices, patched_roll_calendars)
+
+def prepare_adjust_prices_csv_for_update():
+    #This function is used to prepare the adjusted prices csv files for updating
+    #The main purpose is to ensure that the adjusted prices and multiple prices are in sync with each other
+
+
+    multiple_prices_csv = os.path.join('data', 'futures', 'multiple_prices_csv')
+    adjusted_prices_csv = os.path.join('data', 'futures', 'adjusted_prices_csv')
+
+    assert os.path.exists(multiple_prices_csv), "The multiple prices CSV directory does not exist."
+    assert os.path.exists(adjusted_prices_csv), "The adjusted prices CSV directory does not exist."
+
+    instruments = list_all_instruments_from_a_directory(adjusted_prices_csv, extension='.csv')
+    if not instruments: 
+        print("No instruments found in the adjusted prices CSV directory.")
+        return
     
+    for instrument in instruments:
+        multiple_prices_file = os.path.join(multiple_prices_csv, instrument)
+        if not os.path.exists(multiple_prices_file):
+            print(f"Multiple prices CSV for {instrument} does not exist. Skipping.")
+            continue
+
+        adjusted_prices_file = os.path.join(adjusted_prices_csv, instrument)
+
+        multiple_prices = pd.read_csv(multiple_prices_file, index_col=0, parse_dates=True)
+        adjusted_prices = pd.read_csv(adjusted_prices_file, index_col=0, parse_dates=True)
+
+        last_adjusted_date = adjusted_prices.index[-1] if not adjusted_prices.empty else None
+        last_multiple_date = multiple_prices.index[-1] if not multiple_prices.empty else None
+        if last_adjusted_date is None or last_multiple_date is None:
+            print(f"One of the files for {instrument} is empty. Skipping.")
+            continue
+
+        if last_adjusted_date < last_multiple_date:
+            # If the last adjusted date is earlier than the last multiple prices date, we need to adjust the prices CSV
+            print(f"Adjusting prices for {instrument}. Last adjusted date: {last_adjusted_date}, Last multiple prices date: {last_multiple_date}")
+        else: 
+            if last_adjusted_date > last_multiple_date:
+            # If the last adjusted date is later than the last multiple prices date, we need to adjust the multiple prices CSV
+                print(f"Adjusting multiple prices for {instrument}. Last adjusted date: {last_adjusted_date}, Last multiple prices date: {last_multiple_date}")
+        
+        
+
+    return
+
+def backup_repo_data():
+    repo_paths = ['roll_calendars_csv', 'multiple_prices_csv', 'adjusted_prices_csv']
+
+    config = Config()
+    config = get_production_config()
+    parquet_path = config.get_element("parquet_store")
+    repo_back_up_root = os.path.join(parquet_path, '..', 'repo_backup')
+
+    if not os.path.exists(repo_back_up_root):
+        os.makedirs(repo_back_up_root)
+
+    date_str = pd.Timestamp.now().strftime('%Y%m%d')
+    repo_back_up_path = os.path.join(repo_back_up_root, date_str)
+    if not os.path.exists(repo_back_up_path):
+        os.makedirs(repo_back_up_path)
     
+    for repo_path in repo_paths:
+        source_folder = os.path.join('data', 'futures', repo_path)
+        backup_folder = os.path.join(repo_back_up_path, repo_path)
+        print(source_folder)
+        backup_one_folder(source_folder, backup_folder, extension='.csv')
+        print(f"Backed up {repo_path} to {backup_folder}")
 
 #what I need to do is to create a temporary data directory to store futures contract price parquet files only for updating the existing roll calendar
 #to do that, I need to: 
@@ -65,6 +132,7 @@ def copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_
     #copy futures contract price parquets for the instrument to the temporary directory
     repo_roll_calendar_data = csvRollCalendarData()
     for instrument in repo_roll_calendar_data.keys():
+    #for instrument in ['LEAD_LME', 'TIN_LME', 'ZINC_LME']:
         print(instrument)
         copy_futures_contract_price_parquets_for_roll_calendar_for_instrument(instrument, config, repo_roll_calendar_data,tmp_futures_contract_price_parquets_contract_collection)
     return
@@ -83,6 +151,11 @@ def copy_futures_contract_price_parquets_for_roll_calendar_for_instrument(instru
         last_roll_index = -1
 
     last_contract = min(repo_roll_calendar.iloc[last_roll_index].values)
+    last_roll_date = repo_roll_calendar.index[last_roll_index]
+    #print(last_roll_date)
+    #print(last_roll_date.year, last_roll_date.month, last_roll_date.day)
+    roll_date_month = int("{:04d}".format(last_roll_date.year)+"{:02d}".format(last_roll_date.month)+"00")
+    last_contract = min(last_contract, roll_date_month)
     
     parquet_path = config.get_element("parquet_store")+'/'+CONTRACT_COLLECTION+'/'
     instrument_parquet_files = glob(parquet_path+instrument+"#*"+".parquet")
@@ -168,14 +241,15 @@ def correct_generated_roll_calendars(instrument_code, system_roll_calendars_path
         # patch the system roll calendar with the generated roll calendar
         print("The generated roll calendar has a later datetime than the system roll calendar for", instrument_code)
         system_roll_calendar.drop(system_roll_calendar.index[-1], inplace=True)  # drop the last line of the system roll calendar
+        last_actual_roll = system_roll_calendar.tail(1) # get the last line of the system roll calendar, which is the last 'actual' roll
         #last_actual_roll = system_roll_calendar.iloc[-1] # get the 2nd last line of the system roll calendar
     else: 
         # drop the first roll generated,  which will be replaced by the last line from the system roll calendar (dictated by the actual multiple prices)
         print("The generated roll calendar has an earlier datetime than the system roll calendar for", instrument_code)
         generated_roll_calendar.drop(generated_roll_calendar.index[0], inplace=True)
-        #last_actual_roll = system_roll_calendar.iloc[-1]
+        last_actual_roll = system_roll_calendar.tail(2) # get the last two line of the system roll calendar, the last 'actual' roll and the last 'generated' roll which may be an artifact of the multiple prices
 
-    last_actual_roll = system_roll_calendar.tail(1) # get the last line of the system roll calendar, which is the last 'actual' roll
+    
     system_roll_calendar = pd.concat([system_roll_calendar, generated_roll_calendar], axis=0)
     #append the last actual roll to the generated roll calendar
     generated_roll_calendar = pd.concat([last_actual_roll, generated_roll_calendar])
@@ -184,21 +258,7 @@ def correct_generated_roll_calendars(instrument_code, system_roll_calendars_path
     #print(system_roll_calendar.head(2))
     #print(generated_roll_calendar.head(2) )
 
-def backup_system_roll_calendars():
-    # This function is a placeholder for the backup of existing system roll calendars
-    # It should create a backup of the existing roll calendars before updating them
-    # The backup can be done by copying the existing roll calendars to a backup folder
 
-    system_roll_calendar_path = os.path.join('data', 'futures', 'roll_calendars_csv')
-    backup_roll_calendar_path = os.path.join('mtdatastore', 'rollcalendarbackup')
-    if not os.path.exists(backup_roll_calendar_path):   
-        os.makedirs(backup_roll_calendar_path)
-    if os.path.exists(system_roll_calendar_path):
-        for file in os.listdir(system_roll_calendar_path):
-            if file.endswith('.csv'):
-                src_file = os.path.join(system_roll_calendar_path, file)
-                dst_file = os.path.join(backup_roll_calendar_path, file)              
-                os.system(f'cp {src_file} {dst_file}')
                 
 def generate_spliced_multiple_prices(instrument_code, multiple_prices_from_db, spliced_multiple_prices):
     supplied_file = os.path.join('data', 'futures', 'multiple_prices_csv', instrument_code + '.csv') # repo data
@@ -208,22 +268,30 @@ def generate_spliced_multiple_prices(instrument_code, multiple_prices_from_db, s
     supplied = pd.read_csv(supplied_file, index_col=0, parse_dates=True)
     generated = pd.read_csv(generated_file, index_col=0, parse_dates=True)
 
+    columns_to_order = supplied.columns.tolist()
+    generated = generated[columns_to_order]  # ensure the columns are in the same order as supplied
+    generated.to_csv(generated_file)  # save the generated file after sorting the columns 
+
     # get final datetime of the supplied multiple_prices for this instrument
     last_supplied = supplied.index[-1] 
-
     print(f"last datetime of supplied prices {last_supplied}, first datetime of updated prices is {generated.index[0]}")
+
+    #re-writing Carver's code here: 
+    #1. The reference of slicing using generated.loc[last_supplied:] repeatedly is clearly inefficient and redundant
+    #2. More importantly, in the original code, the overlapping line, as indicated by generated.loc[last_supplied:].iloc[0] is discarded before the price and forward comparison. This would become a problem if this line happens to be a roll
+    #3. Compare the code below to the code in the repo document to see the difference 
 
     # assuming the latter is later than the former, truncate the generated data:
     generated = generated.loc[last_supplied:]
+    # check we're using the same price and forward contracts (i.e. no rolls missing, which there shouldn't be if there is date overlap)
+    assert(supplied.iloc[-1].PRICE_CONTRACT == generated.iloc[0].PRICE_CONTRACT)
+    assert(supplied.iloc[-1].FORWARD_CONTRACT == generated.iloc[0].FORWARD_CONTRACT)
 
     # if first datetime in generated is the same as last datetime in repo, skip that row
     first_generated = generated.index[0] 
     if first_generated == last_supplied:
         generated = generated.iloc[1:]
 
-    # check we're using the same price and forward contracts (i.e. no rolls missing, which there shouldn't be if there is date overlap)
-    assert(supplied.iloc[-1].PRICE_CONTRACT == generated.loc[last_supplied:].iloc[0].PRICE_CONTRACT)
-    assert(supplied.iloc[-1].FORWARD_CONTRACT == generated.loc[last_supplied:].iloc[0].FORWARD_CONTRACT)
     # nb we don't assert that the CARRY_CONTRACT is the same for supplied and generated, as some of the rolls implicit in the supplied multiple_prices don't match the pattern in the rollconfig.csv
     spliced = pd.concat([supplied, generated])
     spliced.to_csv(os.path.join(spliced_multiple_prices, instrument_code+'.csv'))
@@ -234,7 +302,7 @@ def generate_spliced_multiple_prices(instrument_code, multiple_prices_from_db, s
 #Build all temporary roll calendars: 
 if __name__ == "__main__":
     #Backup existing system roll calendars
-    #backup_system_roll_calendars()
+    #backup_repo_data()
 
     roll_calendars_from_db, multiple_prices_from_db, spliced_multiple_prices, patched_roll_calendars = create_tmp_directories_for_update_roll_calendars()
     tmp_futures_contract_price_parquets, tmp_futures_contract_price_parquets_contract_collection = prepare_tmp_futures_contract_parquets_folder_for_updating_roll_calendars()
@@ -252,27 +320,36 @@ if __name__ == "__main__":
     #tmp_dict_of_futures_contract_prices = tmp_dict_of_all_futures_contract_prices.final_prices()
     #print(tmp_dict_of_all_futures_contract_prices)
     system_roll_calendar_path = os.path.join('data', 'futures', 'roll_calendars_csv')
-
     repo_roll_calendar_data = csvRollCalendarData()
+    
+    #prepare_adjust_prices_csv_for_update()
+
     for instrument in repo_roll_calendar_data.keys():
-    #for instrument in ['EU-DJ-UTIL' ]   :
+        if instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini','VNKI', 'WHEY', 'ZINC_LME']:
+            continue
+
+    #or instrument in ['LEAD_LME', 'TIN_LME', 'ZINC_LME']: #these tickers were patached when fixing historical data 
+    #for instrument in ['SGX', 'VIX_mini']:
+    #for instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini', 'VNKI', 'WHEY', 'ZINC_LME']:
+    #for instrument in ['BB3M']:
+        print(instrument)
         #1. Generate a roll calendar for the instrument using the tmp_parquet_futures_contract_price_data
         try:
             ...
             #print(instrument)
-            build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
+            #build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
         except Exception as e: 
             print(e)
 
         #2. Resolve the first roll in the generated roll calendar by comparing it to the last roll in the system roll calendar
         #   Patch up the system roll calendar with the correct generated roll calendar 
         #   Update the generated roll calendar with the 'real' last roll from the system roll calendar to ensure that the multiple prices generated from the roll calendar are correct without gaps
-        correct_generated_roll_calendars(instrument, system_roll_calendar_path, roll_calendars_from_db,patched_roll_calendars)
+        #correct_generated_roll_calendars(instrument, system_roll_calendar_path, roll_calendars_from_db,patched_roll_calendars)
 
         #3. Generate multiple prices for the instrument using the generated roll calendar
         try:
             ...
-            process_multiple_prices_single_instrument(instrument, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)
+            #process_multiple_prices_single_instrument(instrument, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)
             generate_spliced_multiple_prices(instrument, multiple_prices_from_db, spliced_multiple_prices)
         except Exception as e:
             print(e)

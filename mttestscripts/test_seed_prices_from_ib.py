@@ -33,10 +33,12 @@ from random import shuffle
 def seed_price_data_from_IB(instrument_code):
     data = dataBlob()
     data_broker = dataBroker(data)
+    print(instrument_code)
 
     list_of_contracts = data_broker.get_list_of_contract_dates_for_instrument_code(
         instrument_code, allow_expired=True
     )
+    print(list_of_contracts)
 
     ## This returns yyyymmdd strings, where we have the actual expiry date
 
@@ -111,6 +113,8 @@ if __name__ == "__main__":
     path = config.get_element("parquet_store")+'/'+CONTRACT_COLLECTION
     instruments = FuturesInstrumentData.get_list_of_instruments()
     shuffle(instruments)
+    print(instruments)
+    intruments = ['LEAD_LME']
     for instrument in instruments:
         try:
             seed_price_data_from_IB(instrument)

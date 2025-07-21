@@ -55,7 +55,9 @@ def remove_empty_parquet(file_path):
 
 if __name__ == "__main__":
     print(datetime.datetime.now())
-    count_all()
-    count_parquet_in_a_directory('/mnt/sda1/data/parquet/futures_contract_prices/')
-    #count_empty_parquet_in_a_directory('/mnt/sda1/data/parquet/futures_contract_prices/')
+    #count_all()
+    #count_parquet_in_a_directory('/mnt/sda1/data/parquet/futures_contract_prices/')
+    #count_empty_parquet_in_a_directory('/mnt/sda1/data/parquet/ib/CTH_5_mins/')
+    count_empty_parquet_in_a_directory('/mnt/sda1/data/parquet/futures_contract_prices/')
+
     #remove_empty_parquet('/mnt/sda1/data/parquet/futures_contract_prices/')

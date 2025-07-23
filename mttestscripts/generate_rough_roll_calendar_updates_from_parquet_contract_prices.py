@@ -11,6 +11,7 @@ from sysdata.parquet.parquet_access import ParquetAccess
 from sysproduction.data.prices import diagPrices
 from sysinit.futures.multipleprices_from_db_prices_and_csv_calendars_to_db import process_multiple_prices_single_instrument
 from mttestscripts.files_tool import list_all_instruments_from_a_directory, backup_one_folder
+import pickle 
 
 
 
@@ -324,8 +325,18 @@ if __name__ == "__main__":
     
     #prepare_adjust_prices_csv_for_update()
 
+    instrument_pickle_file = 'processed_tickers.pkl'
+    if os.path.exists(instrument_pickle_file):
+        with open(instrument_pickle_file,'rb') as file:  
+            processed_instruments = pickle.load(file)
+    else:
+        processed_instruments = []
+
     for instrument in repo_roll_calendar_data.keys():
         if instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini','VNKI', 'WHEY', 'ZINC_LME']:
+            continue
+
+        if instrument in processed_instruments: 
             continue
 
     #or instrument in ['LEAD_LME', 'TIN_LME', 'ZINC_LME']: #these tickers were patached when fixing historical data 
@@ -337,19 +348,23 @@ if __name__ == "__main__":
         try:
             ...
             #print(instrument)
-            #build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
+            build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
         except Exception as e: 
             print(e)
 
         #2. Resolve the first roll in the generated roll calendar by comparing it to the last roll in the system roll calendar
         #   Patch up the system roll calendar with the correct generated roll calendar 
         #   Update the generated roll calendar with the 'real' last roll from the system roll calendar to ensure that the multiple prices generated from the roll calendar are correct without gaps
-        #correct_generated_roll_calendars(instrument, system_roll_calendar_path, roll_calendars_from_db,patched_roll_calendars)
+        correct_generated_roll_calendars(instrument, system_roll_calendar_path, roll_calendars_from_db,patched_roll_calendars)
 
         #3. Generate multiple prices for the instrument using the generated roll calendar
         try:
             ...
-            #process_multiple_prices_single_instrument(instrument, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)
+            process_multiple_prices_single_instrument(instrument, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)
             generate_spliced_multiple_prices(instrument, multiple_prices_from_db, spliced_multiple_prices)
         except Exception as e:
             print(e)
+
+        processed_instruments += [instrument]
+        with open (instrument_pickle_file, 'wb') as file: 
+            pickle.dump(processed_instruments, file)

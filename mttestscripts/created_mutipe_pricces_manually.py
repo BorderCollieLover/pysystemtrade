@@ -28,12 +28,23 @@ def create_multiple_prices_from_contracts(instrument, carry_contract, price_cont
     price_ohlcv = pd.read_parquet(price_parquet)
     forward_ohlcv = pd.read_parquet(forward_parquet)
 
-    #print(carry_ohlcv.head( ))      
-    print(price_ohlcv.head( ))
-    print(forward_ohlcv.head( ))
-    print(price_ohlcv.tail()) 
-    print(forward_ohlcv.tail())   
+    carry_ohlcv['CARRY'] = carry_ohlcv['FINAL']
+    price_ohlcv['PRICE'] = price_ohlcv['FINAL']
+    forward_ohlcv['FORWARD']=forward_ohlcv['FINAL']
+    multiple_prices = carry_ohlcv[['CARRY']].join(price_ohlcv[['PRICE']].join(forward_ohlcv[['FORWARD']], how='outer'), how='outer')
+    multiple_prices['CARRY_CONTRACT'] = carry_contract
+    multiple_prices['PRICE_CONTRACT'] = price_contract
+    multiple_prices['FORWARD_CONTRACT'] = forward_contract
+    multiple_prices = multiple_prices[['CARRY', 'CARRY_CONTRACT', 'PRICE','PRICE_CONTRACT','FORWARD', 'FORWARD_CONTRACT' ]]
+    
+
+    print(multiple_prices.head())
+    print(multiple_prices.tail())
+    return multiple_prices
+    
+
     
 if __name__ == "__main__":
-    create_multiple_prices_from_contracts('LEAD_LME', 20240500, 20250600, 20240700)
-
+    for instrument in ['LEAD_LME', 'TIN_LME', 'ZINC_LME']:
+        generated_multiple_prices = create_multiple_prices_from_contracts(instrument, 20240800, 20240700, 20240800)
+        generated_multiple_prices.to_csv(instrument+'.csv')

@@ -10,6 +10,7 @@ def backup_all_data_parquet_into_csv_files(backup_root):
     print(backup_root)
     source_folders = ['futures_adjusted_prices', 'futures_contract_prices', 'futures_multiple_prices', 'ib']
     for folder in source_folders: 
+        
         source_files_path = os.path.join(config.get_element("parquet_store"), folder)
         target_files_path = os.path.join(backup_root, folder)
         #print(target_files_path)

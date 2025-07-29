@@ -2140,3 +2140,1017 @@ Email stored not sent on 2025-07-04 01:24:15.759524: Price Spike EUA
 Spike found in prices for EUA/20270300: need to manually check by running interactive_manual_check_historical_prices
 ********************************************************************************
 
+********************************************************************************
+Email stored not sent on 2025-07-24 01:31:34.134173: Price Spike EURIBOR
+
+Spike found in prices for EURIBOR/20260900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 01:47:51.574602: Price Spike EU-DJ-TELECOM
+
+Spike found in prices for EU-DJ-TELECOM/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:05:56.377297: Price Spike ZINC_LME
+
+Spike found in prices for ZINC_LME/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:06:08.251242: Price Spike ZINC_LME
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:06:08.254760: Price Spike ZINC_LME
+
+Spike found in prices for ZINC_LME/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:06:52.185727: Price Spike ZINC_LME
+
+Spike found in prices for ZINC_LME/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:17:55.268343: Price Spike BITCOIN
+
+Spike found in prices for BITCOIN/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:29:38.871058: Price Spike V2X
+
+Spike found in prices for V2X/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:38:44.047082: Price Spike ALUMINIUM
+
+Spike found in prices for ALUMINIUM/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:53:20.252035: Price Spike LUMBER-new
+
+Spike found in prices for LUMBER-new/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:53:49.847463: Price Spike LUMBER-new
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 02:53:49.850386: Price Spike LUMBER-new
+
+Spike found in prices for LUMBER-new/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 03:28:43.469642: Price Spike US10
+
+Spike found in prices for US10/20260300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 03:52:47.787526: Price Spike EU-MID
+
+Spike found in prices for EU-MID/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 04:14:05.316014: Price Spike ETHER-micro
+
+Spike found in prices for ETHER-micro/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 04:14:16.266613: Price Spike ETHER-micro
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-25 04:14:16.267007: Price Spike ETHER-micro
+
+Spike found in prices for ETHER-micro/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:37:12.117484: Price Spike EU-DJ-TELECOM
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:37:12.120933: Price Spike EU-DJ-TELECOM
+
+Spike found in prices for EU-DJ-TELECOM/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:43:52.667994: Price Spike ZINC_LME
+
+Spike found in prices for ZINC_LME/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:43:55.891495: Price Spike ZINC_LME
+
+Spike found in prices for ZINC_LME/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:43:58.974559: Price Spike ZINC_LME
+
+Spike found in prices for ZINC_LME/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:44:01.778457: Price Spike ZINC_LME
+
+Spike found in prices for ZINC_LME/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:47:09.741573: Price Spike BTP
+
+Spike found in prices for BTP/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:49:57.939530: Price Spike V2X
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:49:57.942222: Price Spike V2X
+
+Spike found in prices for V2X/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:54:05.717629: Price Spike EU-REALESTATE
+
+Spike found in prices for EU-REALESTATE/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:56:41.790071: Price Spike LUMBER-new
+
+Spike found in prices for LUMBER-new/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 01:56:44.868590: Price Spike LUMBER-new
+
+Spike found in prices for LUMBER-new/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:09:53.187285: Price Spike EU-AUTO
+
+Spike found in prices for EU-AUTO/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:27:18.674564: Price Spike BUXL
+
+Spike found in prices for BUXL/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:28:29.719529: Price Spike MILKDRY
+
+Spike found in prices for MILKDRY/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:28:38.971723: Price Spike MILKDRY
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:28:38.974291: Price Spike MILKDRY
+
+Spike found in prices for MILKDRY/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:31:09.176734: Price Spike SUGAR_WHITE
+
+Spike found in prices for SUGAR_WHITE/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:31:14.954135: Price Spike SUGAR_WHITE
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:31:14.956812: Price Spike SUGAR_WHITE
+
+Spike found in prices for SUGAR_WHITE/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:38:55.516578: Price Spike TWD
+
+Spike found in prices for TWD/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:45:25.284864: Price Spike IRON
+
+Spike found in prices for IRON/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:45:30.009500: Price Spike IRON
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:45:30.012500: Price Spike IRON
+
+Spike found in prices for IRON/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:45:31.745557: Price Spike IRON
+
+Spike found in prices for IRON/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:45:33.704482: Price Spike IRON
+
+Spike found in prices for IRON/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:52:24.365864: Price Spike SILVER
+
+Spike found in prices for SILVER/20250700: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:52:58.921745: Price Spike SILVER
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:52:58.923028: Price Spike SILVER
+
+Spike found in prices for SILVER/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-26 02:53:08.865903: Price Spike SILVER
+
+Spike found in prices for SILVER/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 01:35:08.834892: Price Spike COPPER-micro
+
+Spike found in prices for COPPER-micro/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 01:35:39.182443: Price Spike COPPER-micro
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 01:35:39.185082: Price Spike COPPER-micro
+
+Spike found in prices for COPPER-micro/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 01:38:15.802785: Price Spike COPPER_LME
+
+Spike found in prices for COPPER_LME/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 01:44:14.149995: Price Spike COPPER-mini
+
+Spike found in prices for COPPER-mini/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:03:34.548009: Price Spike DX
+
+Spike found in prices for DX/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:10:34.183994: Price Spike MSCIEAFA
+
+Spike found in prices for MSCIEAFA/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:14:35.560604: Price Spike V2X
+
+Spike found in prices for V2X/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:15:31.676805: Price Spike KRWUSD_mini
+
+Spike found in prices for KRWUSD_mini/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:17:46.542403: Price Spike DAX
+
+Spike found in prices for DAX/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:19:33.861753: Price Spike LUMBER-new
+
+Spike found in prices for LUMBER-new/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:19:40.823862: Price Spike LUMBER-new
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:19:40.827445: Price Spike LUMBER-new
+
+Spike found in prices for LUMBER-new/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:23:02.350704: Price Spike EU-MEDIA
+
+Spike found in prices for EU-MEDIA/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:24:51.512366: Price Spike CORN_mini
+
+Spike found in prices for CORN_mini/20260300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:25:35.136347: Price Spike GASOILINE_ICE
+
+Spike found in prices for GASOILINE_ICE/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:27:51.430270: Price Spike EU-AUTO
+
+Spike found in prices for EU-AUTO/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:32:17.876793: Price Spike FTSEVIET
+
+Spike found in prices for FTSEVIET/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:32:33.854894: Price Spike CNH
+
+Spike found in prices for CNH/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:32:46.757805: Price Spike CNH
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:32:46.761511: Price Spike CNH
+
+Spike found in prices for CNH/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:37:40.955347: Price Spike MSCISING
+
+Spike found in prices for MSCISING/20250700: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:37:46.068750: Price Spike MSCISING
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:37:46.070485: Price Spike MSCISING
+
+Spike found in prices for MSCISING/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:38:39.715722: Price Spike ETHER-micro
+
+Spike found in prices for ETHER-micro/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:39:28.785663: Price Spike FTSEINDO
+
+Spike found in prices for FTSEINDO/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:43:16.518590: Price Spike MIB
+
+Spike found in prices for MIB/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:43:33.005267: Price Spike MILKDRY
+
+Spike found in prices for MILKDRY/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:43:48.978845: Price Spike MILKDRY
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:43:48.981320: Price Spike MILKDRY
+
+Spike found in prices for MILKDRY/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:44:28.812653: Price Spike COAL-GEORDIE
+
+Spike found in prices for COAL-GEORDIE/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:46:55.449037: Price Spike SUGAR_WHITE
+
+Spike found in prices for SUGAR_WHITE/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:47:08.347679: Price Spike SUGAR_WHITE
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:47:08.348265: Price Spike SUGAR_WHITE
+
+Spike found in prices for SUGAR_WHITE/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:49:49.221535: Price Spike CHINAA-CON
+
+Spike found in prices for CHINAA-CON/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:51:01.927181: Price Spike VIX_mini
+
+Spike found in prices for VIX_mini/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:51:45.647467: Price Spike FTSETAIWAN
+
+Spike found in prices for FTSETAIWAN/20250700: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:51:51.688636: Price Spike FTSETAIWAN
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:51:51.689494: Price Spike FTSETAIWAN
+
+Spike found in prices for FTSETAIWAN/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:52:44.224007: Price Spike TWD
+
+Spike found in prices for TWD/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:53:40.135966: Price Spike EU-HEALTH
+
+Spike found in prices for EU-HEALTH/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:55:27.040358: Price Spike RICE
+
+Spike found in prices for RICE/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:55:33.594922: Price Spike RICE
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:55:33.597836: Price Spike RICE
+
+Spike found in prices for RICE/20260100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:55:56.327613: Price Spike COPPER
+
+Spike found in prices for COPPER/20250700: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:56:02.061373: Price Spike COPPER
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:56:02.064540: Price Spike COPPER
+
+Spike found in prices for COPPER/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:56:08.753035: Price Spike COPPER
+
+Spike found in prices for COPPER/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:56:15.518875: Price Spike COPPER
+
+Spike found in prices for COPPER/20260300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:56:32.986232: Price Spike FTSE100
+
+Spike found in prices for FTSE100/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:58:16.923666: Price Spike SILVER
+
+Spike found in prices for SILVER/20250700: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:58:27.777805: Price Spike SILVER
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:58:27.781498: Price Spike SILVER
+
+Spike found in prices for SILVER/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 02:58:30.556741: Price Spike SILVER
+
+Spike found in prices for SILVER/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 03:03:58.121961: Price Spike SMI-MID
+
+Spike found in prices for SMI-MID/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 03:09:00.511509: Price Spike STEEL
+
+Spike found in prices for STEEL/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 03:09:06.965025: Price Spike STEEL
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 03:09:06.967408: Price Spike STEEL
+
+Spike found in prices for STEEL/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 03:10:10.857598: Price Spike NIKKEI
+
+Spike found in prices for NIKKEI/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 03:11:04.211770: Price Spike FTSECHINAH
+
+Spike found in prices for FTSECHINAH/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 03:12:03.399897: Price Spike PLN
+
+Spike found in prices for PLN/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 03:12:15.984603: Price Spike EUROSTX200-LARGE
+
+Spike found in prices for EUROSTX200-LARGE/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:40:12.582697: Price Spike TWD-mini
+
+Spike found in prices for TWD-mini/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:41:08.003497: Price Spike COPPER-micro
+
+Spike found in prices for COPPER-micro/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:41:11.073840: Price Spike COPPER-micro
+
+Spike found in prices for COPPER-micro/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:41:16.363392: Price Spike COPPER-micro
+
+Spike found in prices for COPPER-micro/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:43:01.654332: Price Spike COPPER-mini
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:43:01.659648: Price Spike COPPER-mini
+
+Spike found in prices for COPPER-mini/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:50:00.356722: Price Spike DX
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:50:00.359950: Price Spike DX
+
+Spike found in prices for DX/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:53:11.828753: Price Spike MSCIEAFA
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:53:11.829865: Price Spike MSCIEAFA
+
+Spike found in prices for MSCIEAFA/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:57:53.441787: Price Spike KRWUSD_mini
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 07:57:53.442406: Price Spike KRWUSD_mini
+
+Spike found in prices for KRWUSD_mini/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:01:05.929463: Price Spike DAX
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:01:05.933339: Price Spike DAX
+
+Spike found in prices for DAX/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:07:10.915857: Price Spike EU-MEDIA
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:07:10.918840: Price Spike EU-MEDIA
+
+Spike found in prices for EU-MEDIA/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:10:06.399353: Price Spike CORN_mini
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:10:06.400045: Price Spike CORN_mini
+
+Spike found in prices for CORN_mini/20260300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:11:22.515071: Price Spike GASOILINE_ICE
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:11:22.518360: Price Spike GASOILINE_ICE
+
+Spike found in prices for GASOILINE_ICE/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:14:40.763433: Price Spike EU-AUTO
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:14:40.766525: Price Spike EU-AUTO
+
+Spike found in prices for EU-AUTO/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:22:03.911165: Price Spike FTSEVIET
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:22:03.914301: Price Spike FTSEVIET
+
+Spike found in prices for FTSEVIET/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:22:12.782037: Price Spike CNH
+
+Spike found in prices for CNH/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:22:15.094469: Price Spike CNH
+
+Spike found in prices for CNH/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:28:16.174727: Price Spike MSCISING
+
+Spike found in prices for MSCISING/20250700: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:28:18.618654: Price Spike MSCISING
+
+Spike found in prices for MSCISING/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:29:40.277755: Price Spike ETHER-micro
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:29:40.281250: Price Spike ETHER-micro
+
+Spike found in prices for ETHER-micro/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:29:54.612982: Price Spike FTSEINDO
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:29:54.615703: Price Spike FTSEINDO
+
+Spike found in prices for FTSEINDO/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:32:57.286641: Price Spike MIB
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:32:57.290217: Price Spike MIB
+
+Spike found in prices for MIB/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:33:10.099671: Price Spike MILKDRY
+
+Spike found in prices for MILKDRY/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:33:16.246763: Price Spike MILKDRY
+
+Spike found in prices for MILKDRY/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:33:55.347073: Price Spike COAL-GEORDIE
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:33:55.349216: Price Spike COAL-GEORDIE
+
+Spike found in prices for COAL-GEORDIE/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:36:47.661020: Price Spike SUGAR_WHITE
+
+Spike found in prices for SUGAR_WHITE/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:39:33.400535: Price Spike CHINAA-CON
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:39:33.403653: Price Spike CHINAA-CON
+
+Spike found in prices for CHINAA-CON/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:41:11.862392: Price Spike FTSETAIWAN
+
+Spike found in prices for FTSETAIWAN/20250700: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:41:13.757611: Price Spike FTSETAIWAN
+
+Spike found in prices for FTSETAIWAN/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:43:15.151855: Price Spike EU-HEALTH
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:43:15.154852: Price Spike EU-HEALTH
+
+Spike found in prices for EU-HEALTH/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:46:35.669871: Price Spike RICE
+
+Spike found in prices for RICE/20251100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:46:49.279036: Price Spike RICE
+
+Spike found in prices for RICE/20260100: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:47:47.961567: Price Spike COPPER
+
+Spike found in prices for COPPER/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:47:54.629229: Price Spike COPPER
+
+Spike found in prices for COPPER/20251200: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:48:05.785351: Price Spike COPPER
+
+Spike found in prices for COPPER/20260300: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:51:11.734982: Price Spike SILVER
+
+Spike found in prices for SILVER/20250700: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:51:17.775765: Price Spike SILVER
+
+Spike found in prices for SILVER/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:58:17.379880: Price Spike SMI-MID
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 08:58:17.383562: Price Spike SMI-MID
+
+Spike found in prices for SMI-MID/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 09:04:45.264601: Price Spike NIKKEI
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 09:04:45.267894: Price Spike NIKKEI
+
+Spike found in prices for NIKKEI/20251000: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 09:05:18.614003: Price Spike FTSECHINAH
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 09:05:18.616546: Price Spike FTSECHINAH
+
+Spike found in prices for FTSECHINAH/20250800: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 09:06:14.247635: Price Spike EUROSTX200-LARGE
+
+To reduce email load, won't send any more emails with this subject today. Use 'interactive_diagnostics', 'Emails' to see stored messages
+********************************************************************************
+
+********************************************************************************
+Email stored not sent on 2025-07-29 09:06:14.250824: Price Spike EUROSTX200-LARGE
+
+Spike found in prices for EUROSTX200-LARGE/20250900: need to manually check by running interactive_manual_check_historical_prices
+********************************************************************************
+

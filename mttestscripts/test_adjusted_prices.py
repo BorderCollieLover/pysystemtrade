@@ -129,7 +129,7 @@ def test_process_adjusted_prices_single_instrument():
 
 if __name__ == "__main__":
     #test_process_adjusted_prices_single_instrument()
-    process_adjusted_prices_single_instrument(instrument_code='DOW', csv_adj_data_path='/mnt/sda1/tmp', ADD_TO_CSV=True, ADD_TO_DB=False)
-    #process_adjusted_prices_all_instruments(
-    #    csv_adj_data_path='/mnt/sda1/tmp', ADD_TO_DB=False, ADD_TO_CSV=True
-    #)
+    #process_adjusted_prices_single_instrument(instrument_code='DOW', csv_adj_data_path='/mnt/sda1/tmp', ADD_TO_CSV=True, ADD_TO_DB=False)
+    process_adjusted_prices_all_instruments(
+        csv_adj_data_path='/mnt/sda1/tmp2', ADD_TO_DB=True, ADD_TO_CSV=True
+    )

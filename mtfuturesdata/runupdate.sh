@@ -3,6 +3,7 @@
 cd /mnt/sda1/pysystemtrade
 source .venv/bin/activate
 python mtfuturesdata/multiprocessingtest.py&
+python mttestscripts/backup_all_data_parquets.py&
 sleep 100
 #python mtfuturesdata/1day.py&
 sleep 100

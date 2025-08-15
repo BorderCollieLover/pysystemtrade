@@ -1,2 +1,4 @@
 . ~/.profile
+cd $PYSYS_CODE
+source .venv/bin/activate
 python3 $SCRIPT_PATH/run.py $1

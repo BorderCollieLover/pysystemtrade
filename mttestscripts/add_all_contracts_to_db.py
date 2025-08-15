@@ -27,7 +27,6 @@ from datetime import datetime
 def remove_future_contracts_marked_as_not_sampling(current_date_check_str):
     #this str should reflect the current date, although it is just a proximate date
     #current_date_check_str = '202501' #contracts with contract_date greater than this but marked as not_sampling will be removed 
-
     config = Config()
     config = get_production_config()
     
@@ -46,13 +45,11 @@ def remove_future_contracts_marked_as_not_sampling(current_date_check_str):
 def remove_futures_contracts_prior_to_197802():
     #the steps below might add too many contracts to the database, so we remove contracts that are too far into the past
     current_date_check_str = '197802' #contracts with contract_date greater than this but marked as not_sampling will be removed 
-
     config = Config()
     config = get_production_config()
     
     #the futures_contract collection in production is hardcoded in sysdata.parquet.parquet_futures_per_contract_prices
     contract_collection = 'futures_contracts'
-
     mongoClient=pymongo.MongoClient(host=config.get_element("mongo_host"), port=config.get_element("mongo_port"))
     contractDB = mongoClient[config.get_element('mongo_db')]
     contractCollection = contractDB[contract_collection] 
@@ -92,8 +89,6 @@ def remove_futures_contracts_without_prices():
 def add_multiple_prices_contracts_to_db():
     """
     add all contracts from a muitiple_prices file to mongoDB, as it is necessary when initializing a system with stale historical data
-
-    
     """
     with dataBlob(log_name="Update-Sampled_Contracts") as data:
         instrument_code = get_valid_instrument_code_from_user(
@@ -117,20 +112,15 @@ def add_multiple_prices_contracts_to_db():
                 add_multiple_prices_contracts_to_db_for_instrument(data, instrument_code)   
 
 def add_multiple_prices_contracts_to_db_for_instrument(data: dataBlob, instrument_code: str = ALL_INSTRUMENTS):
-
     contract_date_chain = create_full_contract_date_chain_for_multiple_prices(data, instrument_code)
-
     contract_object_chain = create_contract_object_chain_from_contract_date_chain(instrument_code, contract_date_chain)
-
     update_contract_database_with_contract_chain(instrument_code, contract_object_chain, data)
-    #update_expiries_and_sampling_status_for_contracts(instrument_code, data, contract_object_chain)
+    update_expiries_and_sampling_status_for_contracts(instrument_code, data, contract_object_chain)
     return
 
 def update_expiries_and_sampling_status_for_multiple_prices_contracts(data: dataBlob, instrument_code: str):   
     contract_date_chain = create_full_contract_date_chain_for_multiple_prices(data, instrument_code)
-
     contract_object_chain = create_contract_object_chain_from_contract_date_chain(instrument_code, contract_date_chain)
-
     update_expiries_and_sampling_status_for_contracts(instrument_code, data, contract_object_chain)
     return
 
@@ -139,25 +129,22 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
     multiple_prices = diag_prices.get_multiple_prices(instrument_code)
     current_contract_dict = multiple_prices.current_contract_dict()
     furthest_out_contract_date = current_contract_dict.furthest_out_contract_date()
-
     diag_contract = dataContracts(data)
     roll_parameters = diag_contract.get_roll_parameters(instrument_code)
     furthest_out_contract = contractDateWithRollParameters(contractDate(furthest_out_contract_date), roll_parameters)
 
     final_contract = furthest_out_contract.next_priced_contract()
+    #create a basic date chain for recent expiries
     contract_date_chain = final_contract.get_contracts_from_recently_to_contract_date()
 
-
-    #get all contract expiry dates from contracts already in multiple_prices
+    #count the number of expiries in the multiprice file 
     num_of_contracts = len(list(set(multiple_prices['CARRY_CONTRACT']+multiple_prices['PRICE_CONTRACT']+multiple_prices['FORWARD_CONTRACT'])))
-    #print(len(contract_date_chain))
-    #print(num_of_contracts)
     estimated_num_of_contracts = len(contract_date_chain)+ num_of_contracts -1
+    #print(estimated_num_of_contracts)
 
-    
-    #add the next 12 contracts since we are starting with stale multiple_prices data
+    #Use the above count to extend the date chain forward
     current_contract_date_with_roll_parameters = final_contract
-    for i in range(estimated_num_of_contracts):
+    for i in range(2*estimated_num_of_contracts):
         current_contract_date_with_roll_parameters = (
                 current_contract_date_with_roll_parameters.next_priced_contract()
             )
@@ -166,9 +153,7 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
             )
         contract_date_chain.append(current_contract_date)
 
-    #add earlier contracts that are possibly in the multiple_prices data
-    #instead of using the expiry strings from multiple_prices, we use the previous_priced_contract 
-    #the reason really is to side step the issue of data type conflict between str and contractDate objects 
+    #Use the above count to extend the date chain backward
     current_contract_date_with_roll_parameters = final_contract
     for i in range(2*estimated_num_of_contracts):
         current_contract_date_with_roll_parameters = (
@@ -179,15 +164,31 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
             )
         contract_date_chain.append(current_contract_date)
 
-    return contract_date_chain
+    #print('Chain before checking data existence:')
+    #print(contract_date_chain)
 
-if __name__ == "__main__":
+    #Now check if there are contract price data for are valid by checking if there are contract price data
+    price_dts = diag_prices.contract_dates_with_price_data_for_instrument_code(instrument_code)
+    #print(price_dts)
+    new_contract_date_chains = []
+    for contract_date in contract_date_chain:
+        #print(contract_date)
+        if not str(contract_date) in price_dts:
+            #print(str(contract_date) + ' not in price_dts')
+            contract_date_chain.remove(contract_date)
+        else: 
+            #print( str(contract_date) + ' in price_dts')
+            new_contract_date_chains.append(contract_date)
+
+    #print('Chain after checking data existence:')
+    #print(new_contract_date_chains)
+
+    return new_contract_date_chains
+
+
+def update1() : 
     FuturesInstrumentData = csvFuturesInstrumentData()
-    config = Config()
-    config = get_production_config()
     instruments = FuturesInstrumentData.get_list_of_instruments()
-
-    
     #add contracts to DB
     with dataBlob(log_name="Update-Sampled_Contracts") as data:
         for instrument in instruments:
@@ -195,23 +196,24 @@ if __name__ == "__main__":
                 add_multiple_prices_contracts_to_db_for_instrument(data, instrument)
             except Exception as e:
                 print(e)
-
     #update all sampled contracts
     update_historical_prices()
 
-    exit()
+def update2(): 
     ############################################################
     #### Might need to manually check for spikes in the data first
     ############################################################
-
     #update expiries and sampling status
+    config = Config()
+    config = get_production_config()
+    FuturesInstrumentData = csvFuturesInstrumentData()
+    instruments = FuturesInstrumentData.get_list_of_instruments()
     with dataBlob(log_name="Update-Sampled_Contracts") as data:
         for instrument in instruments:
             try:
                 update_expiries_and_sampling_status_for_multiple_prices_contracts(data, instrument)
             except Exception as e:
                 print(e)
-
     #remove empty parquet files
     path = config.get_element("parquet_store")+'/'+CONTRACT_COLLECTION+'/'
     remove_empty_parquet(path)
@@ -221,6 +223,13 @@ if __name__ == "__main__":
     remove_future_contracts_marked_as_not_sampling(current_year_month)
     remove_futures_contracts_prior_to_197802()
     #remove_futures_contracts_without_prices()
+
+
+if __name__ == "__main__":
+    #data = dataBlob(log_name="Update-Sampled_Contracts")
+    #contract_chain = create_full_contract_date_chain_for_multiple_prices(data, instrument_code = 'BB3M')
+    #print(contract_chain)
+    update1()
 
     
 

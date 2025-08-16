@@ -5,7 +5,7 @@ from mtfuturesdata.mtIBDataUpdater import mtIBDataUpdater, get_all_ib_contracts,
 from random import randint, shuffle
 from sysdata.config.production_config import get_production_config, Config
 import pymongo
-from datetime import datetime
+from datetime import date, datetime
 from mtfuturesdata.count_parquet_data import count_all
 from mtIBFuturesContracts import mtIBContract
 
@@ -111,8 +111,11 @@ if __name__ == "__main__":
     #contracts = get_all_ib_contracts()
     i = 0 
     while True:
-        ibContractUpdater.generate_ib_futures_codes2()
-        ibContractUpdater.resolve_ibfutures_contracts()
+        #update the contract database on Saturdays 
+        today = date.today()
+        if today.weekday() == 5:
+            ibContractUpdater.generate_ib_futures_codes2()
+            ibContractUpdater.resolve_ibfutures_contracts()
         effective_contracts = get_all_effective_contracts()
         print(len(effective_contracts))
         old_data_count = count_all()

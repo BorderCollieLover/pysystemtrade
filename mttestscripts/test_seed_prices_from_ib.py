@@ -7,7 +7,7 @@ from sysbrokers.IB.ib_futures_contract_price_data import (
 )
 from syscore.dateutils import DAILY_PRICE_FREQ, HOURLY_FREQ, Frequency
 from sysdata.data_blob import dataBlob
-
+from sysproduction.data.prices import diagPrices
 from sysproduction.data.broker import dataBroker
 from sysproduction.data.prices import updatePrices
 from sysproduction.update_historical_prices import write_merged_prices_for_contract
@@ -111,12 +111,27 @@ if __name__ == "__main__":
     config = Config()
     config = get_production_config()
     path = config.get_element("parquet_store")+'/'+CONTRACT_COLLECTION
-    instruments = FuturesInstrumentData.get_list_of_instruments()
-    shuffle(instruments)
-    print(instruments)
-    intruments = ['LEAD_LME']
-    for instrument in instruments:
+    instruments = FuturesInstrumentData.get_list_of_instruments() # all instruments in PST
+    #shuffle(instruments)
+    #print(instruments)
+
+    data = dataBlob(log_name="Update-Sampled_Contracts")
+    diag_prices = diagPrices(data)
+    instruments2 = diag_prices.get_list_of_instruments_in_multiple_prices() #instruments with multiple prices 
+    #print(instruments2)
+    less_important_instruments = list(set(instruments) - set(instruments2 ))
+    #intruments = ['LEAD_LME']
+    shuffle(instruments2)
+    shuffle(less_important_instruments)
+    for instrument in instruments2:
         try:
             seed_price_data_from_IB(instrument)
         except Exception as e:
             print(e)
+
+    for instrument in less_important_instruments:
+        try:
+            seed_price_data_from_IB(instrument)
+        except Exception as e:
+            print(e)
+

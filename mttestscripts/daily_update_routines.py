@@ -4,7 +4,7 @@
 
 from sysdata.parquet.parquet_futures_per_contract_prices import CONTRACT_COLLECTION
 from sysdata.data_blob import dataBlob
-from sysproduction.update_sampled_contracts import  update_active_contracts_for_instrument
+from sysproduction.update_sampled_contracts import  update_active_contracts_for_instrument, update_sampled_contracts
 from sysdata.config.production_config import get_production_config, Config
 from sysdata.csv.csv_instrument_data import csvFuturesInstrumentData
 from sysproduction.update_historical_prices import update_historical_prices
@@ -19,7 +19,6 @@ if __name__ == "__main__":
     instruments = FuturesInstrumentData.get_list_of_instruments()
     #instruments = ['ALUMINUM']
 
-    
     #add contracts to DB
     with dataBlob(log_name="Update-Sampled_Contracts") as data:
         for instrument in instruments:
@@ -42,12 +41,12 @@ if __name__ == "__main__":
                 print(e)
 
     #remove empty parquet files
-    path = config.get_element("parquet_store")+'/'+CONTRACT_COLLECTION+'/'
-    remove_empty_parquet(path)
+    #path = config.get_element("parquet_store")+'/'+CONTRACT_COLLECTION+'/'
+    #remove_empty_parquet(path)
 
     #remove contracts that are far distant into the futures and are marked as not_sampling because IB doesn't have data for them yet
-    current_year_month = datetime.now().strftime("%Y%m")
-    remove_future_contracts_marked_as_not_sampling(current_year_month)
+    #current_year_month = datetime.now().strftime("%Y%m")
+    #remove_future_contracts_marked_as_not_sampling(current_year_month)
     #remove_futures_contracts_prior_to_197802()
     #remove_futures_contracts_without_prices()
 

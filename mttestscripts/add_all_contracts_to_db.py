@@ -136,6 +136,7 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
     final_contract = furthest_out_contract.next_priced_contract()
     #create a basic date chain for recent expiries
     contract_date_chain = final_contract.get_contracts_from_recently_to_contract_date()
+    print(contract_date_chain)
 
     #count the number of expiries in the multiprice file 
     num_of_contracts = len(list(set(multiple_prices['CARRY_CONTRACT']+multiple_prices['PRICE_CONTRACT']+multiple_prices['FORWARD_CONTRACT'])))
@@ -151,6 +152,7 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
         current_contract_date = (
                 current_contract_date_with_roll_parameters.contract_date
             )
+        #print(current_contract_date )
         contract_date_chain.append(current_contract_date)
 
     #Use the above count to extend the date chain backward
@@ -162,6 +164,7 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
         current_contract_date = (
                 current_contract_date_with_roll_parameters.contract_date
             )
+        #print(current_contract_date )
         contract_date_chain.append(current_contract_date)
 
     #print('Chain before checking data existence:')
@@ -169,14 +172,14 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
 
     #Now check if there are contract price data for are valid by checking if there are contract price data
     price_dts = diag_prices.contract_dates_with_price_data_for_instrument_code(instrument_code)
-    #print(price_dts)
+    #print(sorted(price_dts))
+    max_price_dt = max(price_dts)
+    min_price_dt = min(price_dts)
     new_contract_date_chains = []
     for contract_date in contract_date_chain:
         #print(contract_date)
-        if not str(contract_date) in price_dts:
-            #print(str(contract_date) + ' not in price_dts')
-            contract_date_chain.remove(contract_date)
-        else: 
+        #f str(contract_date) in price_dts:
+        if str(contract_date) <= max_price_dt and str(contract_date) >= min_price_dt:
             #print( str(contract_date) + ' in price_dts')
             new_contract_date_chains.append(contract_date)
 
@@ -191,7 +194,7 @@ def update1() :
     instruments = FuturesInstrumentData.get_list_of_instruments()
     #add contracts to DB
     with dataBlob(log_name="Update-Sampled_Contracts") as data:
-        for instrument in instruments:
+        for instrument in sorted(instruments):
             try:
                 add_multiple_prices_contracts_to_db_for_instrument(data, instrument)
             except Exception as e:
@@ -226,9 +229,11 @@ def update2():
 
 
 if __name__ == "__main__":
-    #data = dataBlob(log_name="Update-Sampled_Contracts")
-    #contract_chain = create_full_contract_date_chain_for_multiple_prices(data, instrument_code = 'BB3M')
-    #print(contract_chain)
+    instrument_code = 'MILKWET'
+    data = dataBlob(log_name="Update-Sampled_Contracts")
+    contract_chain = create_full_contract_date_chain_for_multiple_prices(data, instrument_code)
+    print(contract_chain)
+    add_multiple_prices_contracts_to_db_for_instrument(data, instrument_code)
     update1()
 
     

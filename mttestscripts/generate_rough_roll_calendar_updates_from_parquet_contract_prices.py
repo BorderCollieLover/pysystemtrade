@@ -79,7 +79,7 @@ def prepare_adjust_prices_csv_for_update():
     return
 
 def backup_repo_data():
-    repo_paths = ['roll_calendars_csv', 'multiple_prices_csv', 'adjusted_prices_csv']
+    repo_paths = ['roll_calendars_csv', 'multiple_prices_csv', 'adjusted_prices_csv', 'fx_prices_csv']
 
     config = Config()
     config = get_production_config()
@@ -303,11 +303,11 @@ def generate_spliced_multiple_prices(instrument_code, multiple_prices_from_db, s
 #Build all temporary roll calendars: 
 if __name__ == "__main__":
     #Backup existing system roll calendars
-    #backup_repo_data()
+    backup_repo_data()
 
     roll_calendars_from_db, multiple_prices_from_db, spliced_multiple_prices, patched_roll_calendars = create_tmp_directories_for_update_roll_calendars()
     tmp_futures_contract_price_parquets, tmp_futures_contract_price_parquets_contract_collection = prepare_tmp_futures_contract_parquets_folder_for_updating_roll_calendars()
-    #copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_price_parquets_contract_collection)
+    copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_price_parquets_contract_collection)
 
 
     #This is where I create a tmp_parquet_futures_contract_price_data that points to the temporary directory where only futures contract prices since the last roll calendar line item is kept

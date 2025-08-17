@@ -264,8 +264,6 @@ def correct_generated_roll_calendars(instrument_code, system_roll_calendars_path
 def generate_spliced_multiple_prices(instrument_code, multiple_prices_from_db, spliced_multiple_prices):
     supplied_file = os.path.join('data', 'futures', 'multiple_prices_csv', instrument_code + '.csv') # repo data
     generated_file = os.path.join(multiple_prices_from_db, instrument_code + '.csv')
-
-    import pandas as pd
     supplied = pd.read_csv(supplied_file, index_col=0, parse_dates=True)
     generated = pd.read_csv(generated_file, index_col=0, parse_dates=True)
 
@@ -275,7 +273,7 @@ def generate_spliced_multiple_prices(instrument_code, multiple_prices_from_db, s
 
     # get final datetime of the supplied multiple_prices for this instrument
     last_supplied = supplied.index[-1] 
-    print(f"last datetime of supplied prices {last_supplied}, first datetime of updated prices is {generated.index[0]}")
+    #print(f"last datetime of supplied prices {last_supplied}, first datetime of updated prices is {generated.index[0]}")
 
     #re-writing Carver's code here: 
     #1. The reference of slicing using generated.loc[last_supplied:] repeatedly is clearly inefficient and redundant
@@ -290,24 +288,83 @@ def generate_spliced_multiple_prices(instrument_code, multiple_prices_from_db, s
 
     # if first datetime in generated is the same as last datetime in repo, skip that row
     first_generated = generated.index[0] 
+    overlapped_row = generated.iloc[[0]]
     if first_generated == last_supplied:
         generated = generated.iloc[1:]
 
     # nb we don't assert that the CARRY_CONTRACT is the same for supplied and generated, as some of the rolls implicit in the supplied multiple_prices don't match the pattern in the rollconfig.csv
     spliced = pd.concat([supplied, generated])
+    #If the supplied data contains NAs in the overlapping row that has value in the generated data, update the NAs with data
+    spliced = spliced.combine_first(overlapped_row) 
     spliced.to_csv(os.path.join(spliced_multiple_prices, instrument_code+'.csv'))
 
     #from sysinit.futures.multiple_and_adjusted_from_csv_to_db import init_db_with_csv_prices_for_code
     #init_db_with_csv_prices_for_code(instrument_code, multiple_price_datapath=spliced_multiple_prices)
 
+def generate_spliced_multiple_prices_with_spurious_roll(instrument_code, multiple_prices_from_db, spliced_multiple_prices):
+    # Similar to the previous function, but with additional handling for spurious rolls
+    # 2025.08.17  see Notion notes on this issue https://www.notion.so/Multiple-Prices-from-spurious-rolls-25239604e82e8046b0add26bc508ebf3?source=copy_link
+    supplied_file = os.path.join('data', 'futures', 'multiple_prices_csv', instrument_code + '.csv') # repo data
+    generated_file = os.path.join(multiple_prices_from_db, instrument_code + '.csv')
+
+    supplied = pd.read_csv(supplied_file, index_col=0, parse_dates=True)
+    generated = pd.read_csv(generated_file, index_col=0, parse_dates=True)
+
+    spliced_file = os.path.join(spliced_multiple_prices, instrument_code+'.csv')
+    #if spliced_file exists and is older than the generated_file , then we'd have to deal with spurious rows otherwise we can skip
+    if os.path.exists(spliced_file) and os.path.getmtime(spliced_file) < os.path.getmtime(generated_file):
+        ...
+    else:
+        return
+    print('here')
+        
+    while True:
+        last_supplied_dt = supplied.index[-1]
+
+        #find last_supplied_dt in generated.index
+        last_supplied_loc = generated.index.get_loc(last_supplied_dt) 
+        if last_supplied_loc is None:
+            print(f"last_supplied_dt for {instrument_code} is not found in genereated multiple prices, skipping splicing")
+            return
+        
+        if supplied.iloc[-1].PRICE_CONTRACT == generated.iloc[last_supplied_loc].PRICE_CONTRACT:
+            #found the overlapping dt, created spliced multiple prices 
+            generated_for_spliced = generated.iloc[last_supplied_loc:]
+            overlapped_row = generated_for_spliced.iloc[[0]]
+
+            if len(generated_for_spliced) >1 :
+                generated_for_spliced = generated_for_spliced.iloc[1:]
+                spliced = pd.concat([supplied, generated_for_spliced])
+            else: 
+                spliced = supplied
+                
+            #If the supplied data contains NAs in the overlapping row that has value in the generated data, update the NAs with data
+            spliced = spliced.combine_first(overlapped_row)
+            spliced.to_csv(os.path.join(spliced_multiple_prices, 'tmp', instrument_code+'.csv'))
+            return
+        else:
+            supplied.drop(last_supplied_dt, inplace=True)  # drop the last row of supplied
+
+        #if supplied is now an empty dataframe then something is wrong
+        if supplied.empty:
+            print(f"supplied is empty after dropping last_supplied_dt for {instrument_code}, skipping splicing")
+            return
+
 #Build all temporary roll calendars: 
 if __name__ == "__main__":
+
+    """ instrument = 'AEX'
+    multiple_prices_from_db  = '/mnt/sda1/pysystemtrade/data/futures/multiple_from_db'
+    spliced_multiple_prices = '/mnt/sda1/pysystemtrade/data/futures/multiple_prices_csv_spliced'
+    generate_spliced_multiple_prices_with_spurious_roll(instrument, multiple_prices_from_db, spliced_multiple_prices)
+    exit()
+     """
     #Backup existing system roll calendars
-    backup_repo_data()
+    #backup_repo_data()
 
     roll_calendars_from_db, multiple_prices_from_db, spliced_multiple_prices, patched_roll_calendars = create_tmp_directories_for_update_roll_calendars()
     tmp_futures_contract_price_parquets, tmp_futures_contract_price_parquets_contract_collection = prepare_tmp_futures_contract_parquets_folder_for_updating_roll_calendars()
-    copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_price_parquets_contract_collection)
+    #copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_price_parquets_contract_collection)
 
 
     #This is where I create a tmp_parquet_futures_contract_price_data that points to the temporary directory where only futures contract prices since the last roll calendar line item is kept
@@ -332,22 +389,20 @@ if __name__ == "__main__":
     else:
         processed_instruments = []
 
+    #for instrument in ['MILK', 'MILKDRY', 'MILKWET']:
     for instrument in repo_roll_calendar_data.keys():
-        if instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini','VNKI', 'WHEY', 'ZINC_LME']:
+        #if instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini','VNKI', 'WHEY', 'ZINC_LME']:
+        #    continue
+        if instrument in ['INR-micro', 'NICKEL_LME', 'NIFTY-IN', 'R1000_mini', 'MILK', 'MILKDRY', 'MILKWET']: #These are instruments with various data issues, skipping for now
             continue
 
         if instrument in processed_instruments: 
             continue
 
-    #or instrument in ['LEAD_LME', 'TIN_LME', 'ZINC_LME']: #these tickers were patached when fixing historical data 
-    #for instrument in ['SGX', 'VIX_mini']:
-    #for instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini', 'VNKI', 'WHEY', 'ZINC_LME']:
-    #for instrument in ['BB3M']:
         print(instrument)
         #1. Generate a roll calendar for the instrument using the tmp_parquet_futures_contract_price_data
         try:
             ...
-            #print(instrument)
             build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
         except Exception as e: 
             print(e)
@@ -362,7 +417,15 @@ if __name__ == "__main__":
             ...
             process_multiple_prices_single_instrument(instrument, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)
             generate_spliced_multiple_prices(instrument, multiple_prices_from_db, spliced_multiple_prices)
+            
         except Exception as e:
+            print(e)
+
+        ##### This should be a one-off patch run on August 17, 2025 to handle spurious multiple prices data from spurious rolls 
+        ##### For safety, this function puts its output files under spliced_multiple_prices/tmp        
+        try:
+            generate_spliced_multiple_prices_with_spurious_roll(instrument, multiple_prices_from_db, spliced_multiple_prices)
+        except Exception as e: 
             print(e)
 
         processed_instruments += [instrument]

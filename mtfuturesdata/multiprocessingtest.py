@@ -7,7 +7,7 @@ from sysdata.config.production_config import get_production_config, Config
 import pymongo
 from datetime import date, datetime
 from mtfuturesdata.count_parquet_data import count_all
-from mtIBFuturesContracts import mtIBContract
+from mtfuturesdata.mtIBFuturesContracts import mtIBContract
 
 number_of_processes = 8
 #A multiprocessing setup in PST, the basic example in this code works ok
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         #update the contract database on Saturdays 
         start_time = time()
         today = date.today()
-        if today.weekday() == 5:
+        if today.weekday() == 5 or today.weekday() == 4:
             ibContractUpdater.generate_ib_futures_codes2()
             ibContractUpdater.resolve_ibfutures_contracts()
         effective_contracts = get_all_effective_contracts()

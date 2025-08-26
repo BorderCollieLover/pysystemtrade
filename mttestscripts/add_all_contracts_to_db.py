@@ -229,12 +229,14 @@ def update2():
 
 
 if __name__ == "__main__":
-    instrument_code = 'MILKWET'
-    data = dataBlob(log_name="Update-Sampled_Contracts")
-    contract_chain = create_full_contract_date_chain_for_multiple_prices(data, instrument_code)
-    print(contract_chain)
-    add_multiple_prices_contracts_to_db_for_instrument(data, instrument_code)
-    update1()
+    instrument_code = 'NICKEL_LME'
+    instrument_codes =['NICKEL_LME', 'WHEY']
+    for instrument_code in instrument_codes: 
+        data = dataBlob(log_name="Update-Sampled_Contracts")
+        contract_chain = create_full_contract_date_chain_for_multiple_prices(data, instrument_code)
+        print(contract_chain)
+        add_multiple_prices_contracts_to_db_for_instrument(data, instrument_code)
+    #update1()
 
     
 

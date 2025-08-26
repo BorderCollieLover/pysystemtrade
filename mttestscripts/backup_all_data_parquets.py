@@ -8,7 +8,9 @@ def backup_all_data_parquet_into_csv_files(backup_root):
     config = Config()
     config = get_production_config()
     print(backup_root)
-    source_folders = ['futures_adjusted_prices', 'futures_contract_prices', 'futures_multiple_prices', 'ib']
+    #ignore spot fx, because it involves setting the index name, leave it to PST's own backup process 
+    #also ignore other PST data which is back up in PST's own process 
+    source_folders = ['ib'] 
     for folder in source_folders: 
         
         source_files_path = os.path.join(config.get_element("parquet_store"), folder)
@@ -39,8 +41,8 @@ if __name__ == "__main__":
 
     back_up_root = os.path.join(back_up_root,  'CSV')
     backup_all_data_parquet_into_csv_files(back_up_root)
-    back_up_root = '/mnt/sdb1/DATA'
-    backup_all_data_parquet_into_csv_files(back_up_root)
-    back_up_root = os.path.join(os.path.expanduser('~'), 'DATA')
-    backup_all_data_parquet_into_csv_files(back_up_root)
+    #back_up_root = '/mnt/sdb1/DATA'
+    #backup_all_data_parquet_into_csv_files(back_up_root)
+    #back_up_root = os.path.join(os.path.expanduser('~'), 'DATA')
+    #backup_all_data_parquet_into_csv_files(back_up_root)
     

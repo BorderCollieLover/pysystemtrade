@@ -39,8 +39,14 @@ if __name__ == "__main__":
     config = get_production_config()
     back_up_root= config.get_element("parquet_store") 
 
-    back_up_root = os.path.join(back_up_root,  'CSV')
+    back_up_root = os.path.join(back_up_root,  '../DATABackup')
     backup_all_data_parquet_into_csv_files(back_up_root)
+
+
+    destination_path = '/mnt/sdb1/DATABackup/'
+    #data.log.debug("Copy from %s to %s" % (source_path, destination_path))
+    os.system("rsync -av %s %s" % (back_up_root, destination_path))
+
     #back_up_root = '/mnt/sdb1/DATA'
     #backup_all_data_parquet_into_csv_files(back_up_root)
     #back_up_root = os.path.join(os.path.expanduser('~'), 'DATA')

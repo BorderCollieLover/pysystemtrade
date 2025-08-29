@@ -3,6 +3,7 @@
 #Maybe I should use this code to update all contracts ..... 
 
 from asyncio import log
+import data
 from sysdata.parquet.parquet_futures_per_contract_prices import CONTRACT_COLLECTION
 from sysdata.data_blob import dataBlob
 from sysproduction.update_sampled_contracts import  update_active_contracts_for_instrument
@@ -12,6 +13,80 @@ from sysproduction.update_historical_prices import update_historical_prices
 from mttestscripts.add_all_contracts_to_db import update_expiries_and_sampling_status_for_multiple_prices_contracts
 from datetime import datetime
 from sysproduction.backup_db_to_csv import *
+
+
+def get_data_and_create_csv_directories(logname):
+    csv_dump_dir = get_csv_dump_dir()
+
+    class_paths = dict(
+        csvBrokerHistoricOrdersData="broker_orders",
+        csvCapitalData="capital",
+        csvContractHistoricOrdersData="contract_orders",
+        csvContractPositionData="contract_positions",
+        csvFuturesAdjustedPricesData="adjusted_prices",
+        csvFuturesContractData="contracts_data",
+        csvFuturesContractPriceData="contract_prices",
+        csvFuturesMultiplePricesData="multiple_prices",
+        csvFxPricesData="fx_prices",
+        csvOptimalPositionData="optimal_positions",
+        csvRollStateData="roll_state",
+        csvSpreadCostData="spread_costs",
+        csvSpreadsForInstrumentData="spreads",
+        csvStrategyHistoricOrdersData="strategy_orders",
+        csvStrategyPositionData="strategy_positions",
+    )
+
+    for class_name, path in class_paths.items():
+        dir_name = os.path.join(csv_dump_dir, path)
+        class_paths[class_name] = dir_name
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+
+        data = dataBlob(csv_data_paths=class_paths, log_name=logname)
+
+    data.add_class_list(
+        [
+            csvBrokerHistoricOrdersData,
+            csvCapitalData,
+            csvContractHistoricOrdersData,
+            csvContractPositionData,
+            csvFuturesAdjustedPricesData,
+            csvFuturesContractData,
+            csvFuturesContractPriceData,
+            csvFuturesMultiplePricesData,
+            csvFxPricesData,
+            csvOptimalPositionData,
+            csvRollStateData,
+            csvSpreadCostData,
+            csvSpreadsForInstrumentData,
+            csvStrategyHistoricOrdersData,
+            csvStrategyPositionData,
+        ],
+        use_prefix="csv",
+    )
+
+    data.add_class_list(
+        [
+            get_class_for_data_type(CAPITAL_DATA),
+            get_class_for_data_type(FUTURES_ADJUSTED_PRICE_DATA),
+            get_class_for_data_type(FUTURES_CONTRACT_PRICE_DATA),
+            get_class_for_data_type(FUTURES_MULTIPLE_PRICE_DATA),
+            get_class_for_data_type(FX_DATA),
+            get_class_for_data_type(STORED_SPREAD_DATA),
+            get_class_for_data_type(BROKER_HISTORIC_ORDERS_DATA),
+            get_class_for_data_type(CONTRACT_HISTORIC_ORDERS_DATA),
+            get_class_for_data_type(STRATEGY_HISTORIC_ORDERS_DATA),
+            get_class_for_data_type(CONTRACT_POSITION_DATA),
+            get_class_for_data_type(STRATEGY_POSITION_DATA),
+            get_class_for_data_type(FUTURES_CONTRACT_DATA),
+            get_class_for_data_type(OPTIMAL_POSITION_DATA),
+            get_class_for_data_type(ROLL_STATE_DATA),
+            get_class_for_data_type(HISTORIC_SPREAD_DATA),
+        ],
+        use_prefix="db",
+    )
+
+    return data
 
 def update_contracts():
     FuturesInstrumentData = csvFuturesInstrumentData()
@@ -38,7 +113,7 @@ def update_contracts():
                 print(e)
 
 def mt_backup_db_to_csv():
-    backup_data = dataBlob(log_name="backup_db_to_csv")
+    backup_data = get_data_and_create_csv_directories(logname="backup_db_to_csv")
 
     try:
         backup_adj_to_csv(backup_data)
@@ -149,14 +224,16 @@ def mt_update_repo_multi_adjusted_csvs():
         csv_adjusted_prices.add_adjusted_prices(instrument_code, multiple_prices, ignore_duplication=True)
 
 def mt_update_repo_fx_csvs():
-    from sysproduction.data.currency_data import fxPricesData
+    from sysdata.parquet.parquet_spotfx_prices import parquetFxPricesData
+    from sysdata.parquet.parquet_access import ParquetAccess
     from sysdata.csv.csv_spot_fx import csvFxPricesData
 
-    db_fx_prices_data = fxPricesData()
+    config = get_production_config()
+    parquet_access = ParquetAccess(config.get_element("parquet_store")) 
+    db_fx_prices_data = parquetFxPricesData(parquet_access)
     csv_fx_prices = csvFxPricesData()
 
     list_of_ccy_codes = csv_fx_prices.get_list_of_fxcodes()
-
     for currency_code in list_of_ccy_codes:
         fx_prices = db_fx_prices_data.get_fx_prices(currency_code)
         csv_fx_prices.add_fx_prices(currency_code, fx_prices, ignore_duplication=True)

@@ -75,6 +75,13 @@ class mydataBroker(productionDataLayerGeneric):
         #this is where the data (dataBlob) object is added with various data source interfaces 
         return data
 
+#from sysobject.futures_per_contract_prices.py 
+def remove_zero_volumes(data, VOLUME_COLUMN):
+    drop_it = data[VOLUME_COLUMN] == 0
+    new_data = data[~drop_it]
+    new_data.reset_index(drop=True, inplace=True)
+    return new_data
+
 ###my own class
 ##This class retrieves all historical data of a contract from IB
 ##
@@ -257,9 +264,21 @@ class mtIBData(object):
             if len(bars)<=VERY_FEW_DATA_POINTS:# there are occasions where the script hangs and keeps retrieving the same few data points 
                 break
 
-        allBars =  [b for bars in reversed(barslist) for b in bars]  
+        allBars =  [b for bars in reversed(barslist) for b in bars] 
         #print(allBars[-1]) 
         df = util.df(allBars)
+
+        #Min Tang: 2025.08.29 
+        #For 5 mins, 15 mins, and 1 hour bar sizes, remove data points with zero volumes to be consistent with PST
+        #print(df.head())
+        if (df is not None) and (not  df.empty):  
+            if barSizeSetting != '1 day':
+                new_df = remove_zero_volumes(df, 'volume')
+                removed_rows = len(df) - len(new_df)
+                if removed_rows > 0: 
+                    print("Ignoring %d prices with zero volumes" % (removed_rows))
+                    df = new_df
+        #End of 2025.08.29 
         return(df)
 
     #when updating previously downloaded time series, the datetime of the last data point is passed to the downloading method as the starting point for new data
@@ -671,8 +690,8 @@ if __name__ == "__main__":
     #maybe setup a copy of my own ibPriceData class
     # to call: need to configure a contract information
     # The following are the same contract, and initialized using ib_sync's Future and Contract classes  
-    Future('MES','20241220','CME')
-    Contract(conId=654503314, exchange='CME')
+    #Future('MES','20241220','CME')
+    #Contract(conId=654503314, exchange='CME')
     test=mtIBData()
     df = test.retrieve_historical_data_for_contract_with_frequency(contract=Future('ES','20251219','CME'))
     df = test.retrieve_historical_data_for_contract_with_frequency(contract=Future('ES','20251219','CME'), barSizeSetting='1 day')

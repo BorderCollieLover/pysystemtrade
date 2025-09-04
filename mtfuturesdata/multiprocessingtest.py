@@ -106,6 +106,12 @@ if __name__ == "__main__":
     #exit(0)
 
     ibContractUpdater = mtIBContract()
+    today = date.today()
+    if today.weekday() == 5 or today.weekday() == 4:
+    #if today.weekday() == 1:
+        ibContractUpdater.generate_ib_futures_codes2()
+        ibContractUpdater.resolve_ibfutures_contracts()
+
 
     multiprocessing.set_start_method("spawn")
     #contracts = get_all_ib_contracts()
@@ -113,23 +119,23 @@ if __name__ == "__main__":
     while True:
         #update the contract database on Saturdays 
         start_time = time()
-        today = date.today()
-        if today.weekday() == 5 or today.weekday() == 4:
-            ibContractUpdater.generate_ib_futures_codes2()
-            ibContractUpdater.resolve_ibfutures_contracts()
         effective_contracts = get_all_effective_contracts()
         print(len(effective_contracts))
         #old_data_count = count_all()
+        
         #shuffle (unsampled_contracts)
         #update_all_ohlcv_contracts(unsampled_contracts)        
         shuffle(effective_contracts)
         update_all_ohlcv_contracts(effective_contracts)        
+        
         #new_data_count = count_all()
         #retrieved_data_points = new_data_count- old_data_count
         #msg = ("Finished updating %s effective contracts on %s on run %s, retrieved %s data points. The number of all data points is %s. " %(str(len(effective_contracts)), datetime.now().strftime('%Y-%m-%d %H:%M:%S'), str(i), str(retrieved_data_points), str(new_data_count))) 
         #print(msg)
+        
         end_time = time()
         elapsed_time = end_time - start_time
+        print(f"Finished updating, Elapsed time: {elapsed_time} seconds")
         if elapsed_time < 1800:
             break
         else: 

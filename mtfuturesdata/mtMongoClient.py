@@ -1,4 +1,5 @@
 import os
+from matplotlib.pylab import record
 import pymongo
 from syscore.constants import arg_not_supplied
 from sysdata.config.production_config import get_production_config, Config
@@ -34,6 +35,45 @@ class mtMongoClient():
     def _get_collection(self, coll_name):
         return(self.mongo_db[coll_name])
     
+    def _batch_update_doc_from_df_with_id(self, df, id_fields=[], coll_name="foo"):
+        if df.empty:
+            print("Empty Dataframe to update in {}".format(coll_name))
+            return
+        
+        if coll_name is None: 
+            print("Collection Name is None.")
+            return
+        
+        if (len(coll_name)==0):
+            print("Collection Name is empty.")
+            return
+        
+        if (id_fields is None):
+            print("Dataframe ID fields are empty. Please specify. ")
+            return
+        
+        if (len(id_fields) ==0):
+            print("Dataframe ID fields are empty. Please specify. ")
+            return
+        
+        # Add data validity check, i.e. id_fields are within the column headers 
+        self._generic_ensure_coll(coll_name, coll_type="regular");
+        if len(id_fields)==1 and id_fields[0]=='_id':
+            ...
+        else:
+            df['_id'] = df[id_fields].astype(str).sum(1)
+
+        for index, row in df.iterrows():
+            try:
+                record = row.to_dict()
+                record_id = record.pop('_id') # Extract _id and remove from update fields
+                # Define the fields to update (all fields except _id)
+                update_fields = record
+                self.mongo_db[coll_name].update_one({'_id': record_id}, {'$set': update_fields}, upsert=True)
+            except Exception as e:
+                print("Error updating record in {}: {}".format(coll_name, e))   
+
+
     #batch insert a DataFrame to MongoDB with specified id fields (columns)
     #if the id field has a column header _id, then use this field
     #otherwise, create a _id column by adding all fields in id fields 

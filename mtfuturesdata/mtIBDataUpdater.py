@@ -12,6 +12,7 @@ from syscore.pandas.merge_data_keeping_past_data import merge_newer_data_no_chec
 import os 
 from random import randint, shuffle
 from enum import Enum
+from dateutil.relativedelta import relativedelta
 
 class SendHistBarQuery(Enum):
     INQUIRED = 1
@@ -22,7 +23,7 @@ HISTQUERY_NO = SendHistBarQuery.NO
 
 
 WAIT_FOR_A_LONG_TIME = 12
-TOO_MANY_FAILED_DOWNLOADS = 25
+TOO_MANY_FAILED_DOWNLOADS = 50
 
 class mtIBDataUpdater(mtIBData):
     def __init__(self):
@@ -108,7 +109,26 @@ class mtIBDataUpdater(mtIBData):
                         #print('Expired contract with too many download errors. Skipping.......')
                         #print(msg)
                         return
-                    
+
+        #Min Tang: 2025.08.30 
+        #Add these to skip retrieving data of contracts that has expired a year or more ago
+        #Add these after increasing the error threshold    
+        if contract_expired: 
+            today = datetime.datetime.now()
+            try:
+                one_year_ago = today.replace(year=today.year - 1)
+            except ValueError: # Handles case where today is Feb 29th and a year ago wasn't a leap year
+                one_year_ago = today.replace(year=today.year - 1, day=28) 
+            #one_year_ago = today - relativedelta(years=1)
+            one_year_ago = one_year_ago.astimezone(tz=datetime.timezone.utc)
+            if expiry_dt <= one_year_ago:
+                return
+            three_months_ago = today - relativedelta(months=3)
+            three_months_ago = three_months_ago.astimezone(tz=datetime.timezone.utc)
+            if expiry_dt <= three_months_ago:
+                return
+        #End of 2025.08.30
+
         if contract_expired:
             #For expired contracts, use the day after expiry date as the end for data retrieval (as Hours , minutes and seconds are all 0s)
             endDateTime = expiry_dt + datetime.timedelta(days=1)
@@ -116,6 +136,8 @@ class mtIBDataUpdater(mtIBData):
             endDateTime =''
             #print(endDateTime)
         
+        
+
         ib_contract = self.contract_to_ibcontract(contract)
         #print(startDateTime)
         #print(endDateTime)
@@ -143,6 +165,7 @@ class mtIBDataUpdater(mtIBData):
                 ohlcv_data['date'] =  [x.replace(hour=23, minute=0) for x in pd.to_datetime(ohlcv_data['date'], yearfirst=True, format='%Y%m%d', utc=True)]
                 #ohlcv_data['date'] = ohlcv_data['date'].tz_localize('UTC')
                 #print(ohlcv_data)
+            print(ohlcv_data)
             dt = ohlcv_data.loc[len(ohlcv_data)-1, 'date']
             ohlcv_data = ohlcv_data[['date','open','high','low','close', 'volume', 'average']]
             

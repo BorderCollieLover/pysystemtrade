@@ -108,7 +108,6 @@ if __name__ == "__main__":
     ibContractUpdater = mtIBContract()
     today = date.today()
     if today.weekday() == 5 or today.weekday() == 4:
-    #if today.weekday() == 1:
         ibContractUpdater.generate_ib_futures_codes2()
         ibContractUpdater.resolve_ibfutures_contracts()
 

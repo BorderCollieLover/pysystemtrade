@@ -22,7 +22,7 @@ HISTQUERY_YES = SendHistBarQuery.INQUIRED
 HISTQUERY_NO = SendHistBarQuery.NO
 
 
-WAIT_FOR_A_LONG_TIME = 12
+WAIT_FOR_A_LONG_TIME = 24
 TOO_MANY_FAILED_DOWNLOADS = 50
 
 class mtIBDataUpdater(mtIBData):
@@ -123,10 +123,10 @@ class mtIBDataUpdater(mtIBData):
             one_year_ago = one_year_ago.astimezone(tz=datetime.timezone.utc)
             if expiry_dt <= one_year_ago:
                 return
-            three_months_ago = today - relativedelta(months=3)
-            three_months_ago = three_months_ago.astimezone(tz=datetime.timezone.utc)
-            if expiry_dt <= three_months_ago:
-                return
+            #three_months_ago = today - relativedelta(months=3)
+            #three_months_ago = three_months_ago.astimezone(tz=datetime.timezone.utc)
+            #if expiry_dt <= three_months_ago:
+            #    return
         #End of 2025.08.30
 
         if contract_expired:

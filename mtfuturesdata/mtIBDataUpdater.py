@@ -22,7 +22,7 @@ HISTQUERY_YES = SendHistBarQuery.INQUIRED
 HISTQUERY_NO = SendHistBarQuery.NO
 
 
-WAIT_FOR_A_LONG_TIME = 24
+WAIT_FOR_A_LONG_TIME = 48
 TOO_MANY_FAILED_DOWNLOADS = 50
 
 class mtIBDataUpdater(mtIBData):
@@ -116,9 +116,9 @@ class mtIBDataUpdater(mtIBData):
         if contract_expired: 
             today = datetime.datetime.now()
             try:
-                one_year_ago = today.replace(year=today.year - 1)
+                one_year_ago = today.replace(year=today.year - 2)
             except ValueError: # Handles case where today is Feb 29th and a year ago wasn't a leap year
-                one_year_ago = today.replace(year=today.year - 1, day=28) 
+                one_year_ago = today.replace(year=today.year - 2, day=28) 
             #one_year_ago = today - relativedelta(years=1)
             one_year_ago = one_year_ago.astimezone(tz=datetime.timezone.utc)
             if expiry_dt <= one_year_ago:

@@ -21,12 +21,74 @@ from sysproduction.update_historical_prices import write_merged_prices_for_contr
 from sysobjects.futures_per_contract_prices import futuresContractPrices
 import os
 import pandas as pd
-
+from mttestscripts.ohlc_parquet_cleanup_tools import remove_duplicated_rows_from_ohlc
+from sysproduction.data.prices import diagPrices
 
 
 list_of_frequencies = [HOURLY_FREQ, DAILY_PRICE_FREQ]
 pst_ohlvc_columns = ["OPEN", "HIGH", "LOW", "FINAL", "VOLUME"]  # PST format columns
 ib_ohlvc_columns = ['open','high','low','close', 'volume', 'average']
+
+
+def dedup_contract_prices(contract):
+    parquet_access = ParquetAccess(get_production_config().get_element("parquet_store"))
+    parquet_price = parquetFuturesContractPriceData(parquet_access)
+    data = dataBlob(log_name="update_historical_prices")
+    #print(contract)
+    contract_price_modified = False
+    for frequency in list_of_frequencies:
+        if parquet_price.has_price_data_for_contract_at_frequency(contract, frequency):
+            contract_prices = parquet_price._get_prices_at_frequency_for_contract_object_no_checking(contract, frequency)
+            contract_prices_df = pd.DataFrame(contract_prices)
+            #cleaned_contract_prices_df = remove_duplicated_rows_from_ohlc(contract_prices_df)
+            if not contract_prices_df.index.is_monotonic_increasing:
+                print('Data dates are not increasing!!! '+str(contract)+str(frequency))
+                df_sorted = contract_prices_df.sort_index(ascending=True)
+                contract_prices_df = df_sorted
+                print('writing sorted contract prices.......')
+                contractPrices = futuresContractPrices(contract_prices_df)
+                parquet_price._write_prices_at_frequency_for_contract_object_no_checking(contract, contractPrices, frequency)
+                contract_price_modified = True
+
+            if not contract_prices_df.index.is_monotonic_increasing:
+                print('Data dates are not increasing!!!')
+
+            if not contract_prices_df.index.is_unique:
+                print('Data contains duplicated rows!!! '+str(contract)+str(frequency))
+                cleaned_contract_prices_df = contract_prices_df.loc[~contract_prices_df.index.duplicated(keep='first')]
+                       
+                if len(contract_prices_df) > len(cleaned_contract_prices_df):
+                    print(f"Removed {len(contract_prices_df) - len(cleaned_contract_prices_df)} duplicated bars for {contract}")
+                    contract_price_modified = True
+                    contractPrices = futuresContractPrices(cleaned_contract_prices_df)
+                    print('writing parquet for', contract, frequency, len(contractPrices))
+                    parquet_price._write_prices_at_frequency_for_contract_object_no_checking(contract, contractPrices, frequency)
+                
+    if contract_price_modified: 
+        print('writing merged contract')
+        write_merged_prices_for_contract(data, contract, list_of_frequencies)
+
+def dedup_all_pst_contract_prices():
+    FuturesInstrumentData = csvFuturesInstrumentData()
+    instruments = FuturesInstrumentData.get_list_of_instruments() # all instruments in PST
+    data = dataBlob(log_name="update_historical_prices")
+    broker_data_source = dataBroker(data)
+    diag_prices = diagPrices(data)
+    
+    for instrument_code in instruments: 
+        #instrument_code ='SP500'
+        price_dts = sorted(diag_prices.contract_dates_with_price_data_for_instrument_code(instrument_code))
+        #print(price_dts)
+
+        #contract_dates = list(set([contract[:6] for contract in list_of_contracts]))
+        for contract_date in price_dts:
+            contract = futuresContract(instrument_code, contract_date)
+            dedup_contract_prices(contract)
+
+
+
+
+
 
 #remove zero volume bars from PST futures contract prices data in a parquet file
 #The frequency should not be changed from the default HOURLY_FREQ
@@ -337,7 +399,10 @@ if __name__ == "__main__":
     #update_contract_prices_from_ib_for_frequency(contract, HOURLY_FREQ)
     #update_contract_prices_from_ib_for_frequency(contract, DAILY_PRICE_FREQ)
     
-    update_pst_contract_prices_from_ib()
+    #update_pst_contract_prices_from_ib()
+    
+    
+    dedup_all_pst_contract_prices()
 
 
 

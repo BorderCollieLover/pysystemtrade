@@ -58,6 +58,11 @@ def convert_parquet_to_csv(parquet_file_path, csv_file_path, update_only=True):
     else:
         df.to_csv(csv_file_path, index=True)
 
+def ib_ohlcv_csv_to_parquet(csv_file, parquet_file):
+    data = pd.read_csv(csv_file, index_col='date')
+    print(len(data))
+    data.to_parquet(parquet_file)
+
 
 def list_all_instruments_from_a_directory(directory,  extension='.csv'):
     """
@@ -144,4 +149,16 @@ if __name__ == "__main__":
     config = get_production_config()
     source_file_path = os.path.join(config.get_element("parquet_store"), folder)
     src_parquet = os.path.join(source_file_path, file_name+'.parquet')
-    convert_parquet_to_csv(src_parquet, 'foo.csv')
+    #convert_parquet_to_csv(src_parquet, 'foo.csv')
+
+    filename = '/mnt/sda1/data/parquet/ib/RTH_1_day/UINK5_772076870.parquet'
+    convert_parquet_to_csv(filename, '/mnt/sda1/foo.csv')
+
+    #csv_file = '/mnt/sda1/data/DATABackup/ib/RTH_1_day/ECOG8_803750278.csv'
+    #parquet_file = '/mnt/sda1/data/parquet/ib/RTH_1_day/ECOG8_803750278.parquet'
+    #ib_ohlcv_csv_to_parquet(csv_file, parquet_file)
+
+
+    #csv_file = '/mnt/sda1/data/DATABackup/ib/RTH_1_day/FDIV  25L19_461926858.csv'
+    #parquet_file = '/mnt/sda1/data/parquet/ib/RTH_1_day/FDIV  25L19_461926858.parquet'
+    #ib_ohlcv_csv_to_parquet(csv_file, parquet_file)

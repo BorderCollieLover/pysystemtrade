@@ -246,8 +246,8 @@ class mtIBDataUpdater(mtIBData):
             try: 
                 old_data.index = old_data.index.tz_localize('UTC')
             except Exception as e: 
-                #print(e)
-                ...
+                print(e)
+                print('Setting index error for ' + parquet_obj_file + str(e))
         else:
             old_data = pd.DataFrame()
         new_data = ohlcv_data
@@ -276,6 +276,13 @@ class mtIBDataUpdater(mtIBData):
         #print(old_data.tail())
         #print(merged_data.tail())
         #return(mergingDataWithStatus.only_old_data(old_data))
+
+        #Min Tang, 2025.09.15
+        #Remove possible duplicated rows 
+        if not merged_data.index.is_unique:
+            merged_data = merged_data.loc[~merged_data.index.duplicated(keep='first')]
+
+
         if (old_data.equals(merged_data)):
             msg = ("No new data to update (%s) " %(parquet_obj_file))
             print(msg)

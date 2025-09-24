@@ -115,7 +115,7 @@ def seed_price_data_for_contract_at_frequency(
         return 0 
     else:
         rows_added = update_prices.update_prices_at_frequency_for_contract(
-            contract_object=contract_object, frequency=frequency, new_prices=prices, check_for_spike=False
+            contract_object=contract_object, frequency=frequency, new_prices=prices, check_for_spike=True
         )
         if isinstance(rows_added, int):
             return rows_added
@@ -140,9 +140,7 @@ if __name__ == "__main__":
     data = dataBlob(log_name="Update-Sampled_Contracts")
     diag_prices = diagPrices(data)
     instruments2 = diag_prices.get_list_of_instruments_in_multiple_prices() #instruments with multiple prices 
-    #print(instruments2)
     less_important_instruments = list(set(instruments) - set(instruments2 ))
-    #intruments = ['LEAD_LME']
     shuffle(instruments2)
     shuffle(less_important_instruments)
     for instrument in instruments2:
@@ -150,6 +148,7 @@ if __name__ == "__main__":
             seed_price_data_from_IB(instrument)
         except Exception as e:
             print(e)
+        break
 
     for instrument in less_important_instruments:
         try:

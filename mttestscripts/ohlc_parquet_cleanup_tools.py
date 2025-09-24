@@ -28,6 +28,7 @@ ib_parquet_folders = ['/mnt/sda1/data/parquet/ib/RTH_1_day/', '/mnt/sda1/data/pa
 # For each special case, find the relevant parquets, find the values that are above/below the threshold, and scale it with the scale_factor
 # This method is useful when there are blocks of data that are simply off by 10s, 100s, 1000s etc 
 # But these cases are identified after after examining the data manually, by finding and then trying to fix spikes first 
+# The contract filters are defined using BASH command line-style wildcards 
 IB_OHLC_Spike_Clean_Up_Cases = [
     {'contract_filter': 'TU[FGHJKMNQUVXZ]2[0-9]*_*.parquet', 'value_filter': 20000, 'greater_than': True, 'scale_factor': 10**-3},
     {'contract_filter': 'ZR[FGHJKMNQUVXZ][0-9]*_*.parquet', 'value_filter': 1, 'greater_than': False, 'scale_factor': 10**2},
@@ -49,10 +50,12 @@ IB_OHLC_Spike_Clean_Up_Cases = [
     {'contract_filter': 'JPPZ2_*.parquet', 'value_filter': 100, 'greater_than': False, 'scale_factor': 10**2},
 ]
 
+#Use glob to generate a list of files using BASH command line-style wildcards 
 def find_files_by_filter(folder, filter_str):
     all_files = glob.glob(os.path.join(folder, filter_str))
     return(all_files)
 
+#Takes in an ohlc, and scale the values according to the rules
 def clean_up_ohlc(ohlc, value_filter, greater_than, scale_factor, price_columns = ['open', 'high', 'low', 'close']):
     if ohlc is None: 
         return ohlc
@@ -76,6 +79,7 @@ def clean_up_ohlc(ohlc, value_filter, greater_than, scale_factor, price_columns 
   
     return result
 
+#Clean up all IB contract price parquets where the above clean-up rules are applicable 
 def ib_contract_prices_parquet_special_cases_clean_up():
     for folder in ib_parquet_folders:
         for rule in IB_OHLC_Spike_Clean_Up_Cases:
@@ -89,6 +93,7 @@ def ib_contract_prices_parquet_special_cases_clean_up():
                     print("%s data changed" % str(file))
                     ohlc_cleaned.to_parquet(file)
 
+#remove duplicated rows 
 def remove_duplicated_rows_from_ohlc(ohlc_data):
     if ohlc_data is None:
         return ohlc_data
@@ -136,6 +141,7 @@ def dedup_all_ib_parquets():
 
     return
 
+
 def find_all_ib_futures_with_zero_volumes():
     parquet_folder = '/mnt/sda1/data/parquet/ib/RTH_1_day/'
     all_parquets = list_all_instruments_from_a_directory(parquet_folder, '.parquet')
@@ -158,6 +164,7 @@ def generate_all_parquets_list_for_an_ib_parquet_filter(ib_parquet_filter):
         all_files = all_files + files_in_folder
     return all_files
 
+#return the total volume of an ohlc data. 
 def return_total_volume(ohlc, volume_col='volume'):
     if ohlc is None:
         return True
@@ -166,11 +173,11 @@ def return_total_volume(ohlc, volume_col='volume'):
         return True
     
     assert volume_col in ohlc.columns 
-
     return sum(ohlc[volume_col])
 
 
-
+#check if the last datetime index value is at least n-days ago 
+#strictly speaking not really check for expiry but close enough 
 def test_for_expiry_past_n_days(ohlc, days_past=30):
     if ohlc is None:
         return True
@@ -179,7 +186,6 @@ def test_for_expiry_past_n_days(ohlc, days_past=30):
         return True
     
     last_datetime = ohlc.index[-1]
-
     current_dt_aware = datetime.datetime.now(datetime.timezone.utc)
 
     # Calculate the n-day threshold
@@ -201,21 +207,19 @@ def test_index_for_all_ib_parquets():
     return file_counter
 
     
-
+#re-calcuate the high/low value of an ohlc
+#this is used to fix high/low values that may have been changed when fixing spikes 
 def fix_high_low_for_ohlc(ohlc_data, price_columns = ['open', 'high', 'low', 'close']):
     if ohlc_data is None: 
         return False
     
     if ohlc_data.empty: 
         return False
-    
       
     ohlc_price_data = ohlc_data[price_columns]
     result = ohlc_data.copy()
-
     high_column = price_columns[1]
     low_column = price_columns[2]
-
     result[high_column] = ohlc_price_data.max(axis=1, skipna=True)
     result[low_column] = ohlc_price_data.min(axis=1, skipna=True)
     return result
@@ -232,12 +236,10 @@ def fix_high_low_for_a_parquet(parquet_file, price_columns = ['open', 'high', 'l
         return
     
     fixed_data  = fix_high_low_for_ohlc(ohlc_data, price_columns)
-
     if not ohlc_data.equals(fixed_data):
         if overwrite:
             fixed_data.to_parquet(parquet_file)
             print('Fixing high low for '+parquet_file)
-
     return
 
 def fix_high_low_for_all_ib_parquets():
@@ -257,7 +259,6 @@ if __name__ == "__main__":
     #print(problems)
 
     fix_high_low_for_all_ib_parquets()
-
     exit()
     
     

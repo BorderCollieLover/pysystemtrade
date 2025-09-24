@@ -123,6 +123,11 @@ def back_up_parquet_into_csv(source_folder, backup_folder):
                     back_up_parquet_into_csv(new_source_folder, new_backup_folder)
                     
 
+def fix_str_index_to_datetime(parquet_name, tzinfo='UTC'):
+    ...
+    #if the index of a time series parquet is not recognized as datetime 
+    # try to convert it using pd.to_datetime() to fix the issue 
+
 if __name__ == "__main__":
     """ system_roll_calendars_path = os.path.join('data', 'futures', 'roll_calendars_csv')
     generated_roll_calendars_path = os.path.join('data', 'futures', 'roll_calendars_from_db')

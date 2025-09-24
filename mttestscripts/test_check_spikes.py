@@ -1,24 +1,28 @@
-from sysdata.tools.manual_price_checker import *
-from sysdata.data_blob import dataBlob
-from sysproduction.data.broker import dataBroker
-from sysobjects.contracts import futuresContract
-from syscore.dateutils import Frequency, DAILY_PRICE_FREQ, HOURLY_FREQ
-from sysdata.config.production_config import get_production_config, Config
-from sysdata.csv.csv_instrument_data import csvFuturesInstrumentData
-from mtfuturesdata.mtMongoClient import mtMongoClient
-from sysdata.parquet.parquet_access import ParquetAccess
-from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData
-from sysproduction.update_historical_prices import write_merged_prices_for_contract
-from sysobjects.futures_per_contract_prices import futuresContractPrices
 import os
 import pandas as pd
+import pickle 
+import numpy as np
+from sysdata.tools.manual_price_checker import *
+from sysdata.data_blob import dataBlob
+from sysdata.config.production_config import get_production_config, Config
+from sysdata.csv.csv_instrument_data import csvFuturesInstrumentData
+from sysdata.parquet.parquet_access import ParquetAccess
+from sysdata.parquet.parquet_access import EXTENSION as PARQUET_EXTENSION
+from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData, CONTRACT_COLLECTION,from_contract_and_freq_to_key,from_key_to_freq_and_contract
+from sysproduction.data.broker import dataBroker
+from sysproduction.update_historical_prices import write_merged_prices_for_contract
+from sysproduction.data.prices import diagPrices
+from sysobjects.contracts import futuresContract
+from sysobjects.futures_per_contract_prices import futuresContractPrices
+from syscore.dateutils import Frequency, DAILY_PRICE_FREQ, HOURLY_FREQ
+from syscore.pandas.merge_data_keeping_past_data import _calculate_change_in_vol_normalised_units
 from syslogdiag.email_via_db_interface import send_production_mail_msg
 from mttestscripts.files_tool import list_all_instruments_from_a_directory
-import pickle 
-from syscore.pandas.merge_data_keeping_past_data import _calculate_change_in_vol_normalised_units
-import numpy as np
 from mttestscripts.ohlc_parquet_cleanup_tools import ib_parquet_folders, find_files_by_filter, test_for_expiry_past_n_days, return_total_volume
+from mtfuturesdata.mtMongoClient import mtMongoClient
 
+
+list_of_frequencies = [HOURLY_FREQ, DAILY_PRICE_FREQ]
 max_price_spike=80
 MINIMUM_ROWS_TO_CHECK_FOR_SPIKES = 10 
 
@@ -49,6 +53,10 @@ no_spike_file_filters = [
     'WDC[FGHJKMNQUVXZ][0-9]_*.parquet',  #Washington DC Housing Index
     ##
 ]
+
+#PST instruments and contracts to skip from spike detection: 
+skip_instruments = ['MARS-ARGUS', 'PIPELINE', 'FTSE100-DIV', 'MIB-DIVI', 'HEAT-DEG-AMS','HEAT-DEG-LON', 'HEAT-DEG-NY', 'HOUSE-BO', 'HOUSE-CG', 'HOUSE-DC', 'HOUSE-DN', 'HOUSE-LA', 'HOUSE-LV', 'HOUSE-MI', 'HOUSE-NY', 'HOUSE-SD', 'HOUSE-SF', 'HOUSE-US']
+skip_contracts = [futuresContract('CRUDE_ICE', '20200500'),futuresContract('CRUDE_W', '20200500'), futuresContract('CRUDE_W_mini', '20200500')]
 
 #generate a list of files to skip when checking for spikes
 def generater_spike_check_skip_list_for_ib_data():
@@ -262,6 +270,8 @@ def mt_manual_check_spike_in_ib_from_list():
     if os.path.exists(manual_check_list):
         with open(manual_check_list,'rb') as file:  
             files_to_manually_check = pickle.load(file)
+    else:
+        return
 
     while len(files_to_manually_check)> 0: 
         parquet_file = files_to_manually_check.pop()
@@ -353,6 +363,129 @@ def test_for_spikes2_for_all_ib_parquets(daily_change_threshold=5, intraday_thre
                 files_to_manually_check = files_to_manually_check + [full_parquet_path]
         with open (manual_check_list, 'wb') as file: 
             pickle.dump(files_to_manually_check, file)
+
+def test_for_spikes_for_all_pst_parquets(price_columns = ['OPEN', 'HIGH', 'LOW', 'FINAL']):
+    FuturesInstrumentData = csvFuturesInstrumentData()
+    instruments = FuturesInstrumentData.get_list_of_instruments() # all instruments in PST
+    data = dataBlob(log_name="update_historical_prices")
+    diag_prices = diagPrices(data)
+    parquet_access = ParquetAccess(get_production_config().get_element("parquet_store"))
+    parquet_price = parquetFuturesContractPriceData(parquet_access)
+    #broker_data_source = dataBroker(data)
+    pickle_file_name = 'pst_spike_filelist.pkl'
+    pst_spike2_filelist = []
+    
+    for instrument_code in instruments: 
+        if instrument_code in skip_instruments:
+            continue
+        price_dts = sorted(diag_prices.contract_dates_with_price_data_for_instrument_code(instrument_code))
+        
+        for contract_date in price_dts:
+            contract = futuresContract(instrument_code, contract_date)
+            if contract in skip_contracts:
+                continue
+            for frequency in list_of_frequencies: 
+                if parquet_price.has_price_data_for_contract_at_frequency(contract, frequency):
+                    pst_prices = parquet_price._get_prices_at_frequency_for_contract_object_no_checking(contract, frequency)
+                    pst_prices_df = pd.DataFrame(pst_prices)
+
+                    for column in price_columns:
+                        try:
+                            spike_present = mt_test_price_spike_in_ohlc(pst_prices_df, column_to_check=column)
+                        except Exception as e: 
+                            ...
+                        if spike_present: 
+                            ident = from_contract_and_freq_to_key(contract=contract, frequency=frequency)
+                            filename = parquet_access._get_filename_given_data_type_and_identifier(CONTRACT_COLLECTION, ident)
+                            print(filename)
+                            pst_spike2_filelist += [filename]
+
+                            try:
+                                mt_report_price_spike(data, filename)
+                            except Exception as e: 
+                                print(e)
+                            break
+                        
+    if len(pst_spike2_filelist)>0:
+        with open(pickle_file_name,'wb') as pickle_file:
+            pickle.dump(pst_spike2_filelist, pickle_file)
+
+    return
+
+
+
+
+def test_for_spikes2_for_all_pst_parquets(daily_change_threshold=5, intraday_threshold=5, price_columns = ['OPEN', 'HIGH', 'LOW', 'FINAL']):
+    FuturesInstrumentData = csvFuturesInstrumentData()
+    instruments = FuturesInstrumentData.get_list_of_instruments() # all instruments in PST
+    data = dataBlob(log_name="update_historical_prices")
+    diag_prices = diagPrices(data)
+    parquet_access = ParquetAccess(get_production_config().get_element("parquet_store"))
+    parquet_price = parquetFuturesContractPriceData(parquet_access)
+    #broker_data_source = dataBroker(data)
+    pickle_file_name = 'pst_spike2_filelist.pkl'
+    pst_spike2_filelist = []
+    
+    for instrument_code in instruments: 
+        if instrument_code in skip_instruments:
+            continue
+        price_dts = sorted(diag_prices.contract_dates_with_price_data_for_instrument_code(instrument_code))
+        
+        for contract_date in price_dts:
+            contract = futuresContract(instrument_code, contract_date)
+            if contract in skip_contracts:
+                continue
+            for frequency in list_of_frequencies: 
+                if parquet_price.has_price_data_for_contract_at_frequency(contract, frequency):
+                    pst_prices = parquet_price._get_prices_at_frequency_for_contract_object_no_checking(contract, frequency)
+                    pst_prices_df = pd.DataFrame(pst_prices)
+                    spike_present = test_for_spikes_from_daily_changes_and_intraday_variations(pst_prices_df,daily_change_threshold=5,intraday_threshold=5,price_columns=price_columns)
+                    if spike_present:
+                        #rint('spike present for '+str(contract)+' for frequency ' + str(frequency))
+                        ident = from_contract_and_freq_to_key(contract=contract, frequency=frequency)
+                        filename = parquet_access._get_filename_given_data_type_and_identifier(CONTRACT_COLLECTION, ident)
+                        print(filename)
+                        pst_spike2_filelist += [filename]
+
+    if len(pst_spike2_filelist)>0:
+        with open(pickle_file_name,'wb') as pickle_file:
+            pickle.dump(pst_spike2_filelist, pickle_file)
+
+    return
+
+
+
+
+def mt_manual_check_spike_in_pst_from_list():
+    #1. Load the file list pickle
+    #2. For each file, run the interactive fix process 
+    #3. Update the mixed frequency contract 
+    data = dataBlob(log_name="update_historical_prices")
+    pickle_file_name = 'pst_spike2_filelist.pkl'
+    if os.path.exists(pickle_file_name):
+        with open(pickle_file_name,'rb') as file:  
+            files_to_manually_check = pickle.load(file)
+    else:
+        return
+    
+    print(files_to_manually_check)
+
+    while len(files_to_manually_check)> 0: 
+        parquet_file = files_to_manually_check.pop()
+        print(parquet_file)
+
+        basename_with_ext = os.path.basename(parquet_file)
+        basename_without_ext, _ = os.path.splitext(basename_with_ext)
+        frequency, contract = from_key_to_freq_and_contract(basename_without_ext)
+        if not (contract in skip_contracts):
+        #print(frequency)
+        #print(contract)
+            mt_manual_check_spike_in_a_parquet(parquet_file, column_list=['OPEN', 'HIGH', 'LOW', 'FINAL'], overwrite=True)
+            write_merged_prices_for_contract(data, contract, list_of_frequencies)
+        with open (pickle_file_name, 'wb') as file: 
+            pickle.dump(files_to_manually_check, file)
+    return
+
         
 
     
@@ -371,7 +504,7 @@ if __name__ == "__main__":
     #these two functions scans all IB futures contract prices parquets and collect all files that might have a spike into a list, stored as a pickle on the hard drive
     #Better to run these two and fix the spikes separately.
     #test_for_spikes2_for_all_ib_parquets()
-    mt_test_spike_in_all_ib_parquets()
+    #mt_test_spike_in_all_ib_parquets()
 
     #skip_files = generater_spike_check_skip_list_for_ib_data()
     #print(skip_files)
@@ -380,9 +513,12 @@ if __name__ == "__main__":
 
     
     
-    
+    #Find spikes2 in PST Data
+    #test_for_spikes2_for_all_pst_parquets()
+    #test_for_spikes_for_all_pst_parquets()
 
-
+    #Interactively fix spikes in pst
+    mt_manual_check_spike_in_pst_from_list()
 
 
 

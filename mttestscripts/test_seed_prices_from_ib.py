@@ -1,18 +1,19 @@
+from random import shuffle
 from sysdata.csv.csv_instrument_data import csvFuturesInstrumentData
 from sysdata.config.production_config import get_production_config, Config
 from sysdata.parquet.parquet_futures_per_contract_prices import CONTRACT_COLLECTION
+from sysdata.tools.cleaner import apply_price_cleaning, priceFilterConfig, get_config_for_price_filtering
+from syscore.constants import arg_not_supplied, success, failure
 from syscore.exceptions import missingData
-from sysbrokers.IB.ib_futures_contract_price_data import (
-    futuresContract,
-)
 from syscore.dateutils import DAILY_PRICE_FREQ, HOURLY_FREQ, Frequency
 from sysdata.data_blob import dataBlob
 from sysproduction.data.prices import diagPrices
 from sysproduction.data.broker import dataBroker
-from sysproduction.data.prices import updatePrices
-from sysproduction.update_historical_prices import write_merged_prices_for_contract
-from random import shuffle
-from sysdata.tools.cleaner import apply_price_cleaning
+from sysproduction.data.prices import updatePrices, VERY_BIG_NUMBER
+from sysproduction.update_historical_prices import write_merged_prices_for_contract,get_and_add_prices_for_frequency
+from sysbrokers.IB.ib_futures_contract_price_data import futuresContract
+from mttestscripts.test_check_spikes import skip_instruments
+
 
 
 #MT: This is a fork of the seek_price_data_from_IB file from sysinit.futures. 
@@ -32,27 +33,72 @@ from sysdata.tools.cleaner import apply_price_cleaning
 ####################################################################################################################
 ####################################################################################################################
 
-def seed_price_data_from_IB(instrument_code):
+#This function is a slight change from the same function in sysproduction.update_historical_prices
+# The changes I made is to check the status of updating prices for each frequency, and only write the merged prices if
+# at least one frequency has updated prices.
+# This is to avoid unnecessary rewriting of merged prices when there is no new data
+def update_historical_prices_for_instrument_and_contract(
+    contract_object: futuresContract,
+    data: dataBlob,
+    cleaning_config: priceFilterConfig = arg_not_supplied,
+    interactive_mode: bool = False,
+):
+    diag_prices = diagPrices(data)
+    intraday_frequency = diag_prices.get_intraday_frequency_for_historical_download()
+    daily_frequency = DAILY_PRICE_FREQ
+    list_of_frequencies = [intraday_frequency, daily_frequency]
+
+    contract_price_updated = False
+
+    for frequency in list_of_frequencies:
+        result = get_and_add_prices_for_frequency(
+            data,
+            contract_object,
+            frequency=frequency,
+            cleaning_config=cleaning_config,
+            interactive_mode=interactive_mode,
+        )
+        if result == success:
+            contract_price_updated = True
+
+    if contract_price_updated: 
+        write_merged_prices_for_contract(
+        data, contract_object=contract_object, list_of_frequencies=list_of_frequencies
+        )
+
+    return success
+
+def seed_price_data_from_IB(instrument_code, interactive_mode=False):
     data = dataBlob()
     data_broker = dataBroker(data)
-    print(instrument_code)
+    #print(instrument_code)
 
     list_of_contracts = data_broker.get_list_of_contract_dates_for_instrument_code(
         instrument_code, allow_expired=True
     )
-    print(list_of_contracts)
+    #print(list_of_contracts)
+    cleaning_config = get_config_for_price_filtering(data)
+    if instrument_code in skip_instruments:
+        cleaning_config = cleaning_config._replace(max_price_spike = VERY_BIG_NUMBER)
+    #to do: change the max_spike to a very big value for instrument_code with known big spikes, from 
+    #print(cleaning_config)
 
     ## This returns yyyymmdd strings, where we have the actual expiry date
-
     for contract_date in list_of_contracts:
         ## We do this slightly tortuous thing because there are energy contracts
         ## which don't expire in the month they are labelled with
         ## So for example, CRUDE_W 202106 actually expires on 20210528
-
         date_str = contract_date[:6]
         contract_object = futuresContract(instrument_code, date_str)
 
-        seed_price_data_for_contract(data=data, contract_object=contract_object)
+        #September 25, 20215 Switch from seed_price_data_for_contract() to update_historical_prices_for_instrument_and_contract()
+        #For consistent data cleaning and spike checking with the daily update routine
+        #seed_price_data_for_contract(data=data, contract_object=contract_object)
+        update_historical_prices_for_instrument_and_contract(contract_object,
+            data,
+            cleaning_config=cleaning_config,
+            interactive_mode=interactive_mode,
+        )
 
 
 def seed_price_data_for_contract(data: dataBlob, contract_object: futuresContract):
@@ -148,7 +194,6 @@ if __name__ == "__main__":
             seed_price_data_from_IB(instrument)
         except Exception as e:
             print(e)
-        break
 
     for instrument in less_important_instruments:
         try:

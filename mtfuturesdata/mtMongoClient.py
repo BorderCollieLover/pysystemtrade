@@ -194,10 +194,19 @@ if __name__ == "__main__":
     print(config.get_element("mongo_host"))
     print(config.get_element("mongo_port"))
     testClient=pymongo.MongoClient(host=config.get_element("mongo_host"), port=config.get_element("mongo_port"))
+    print(config.get_element("legacy_ib_data_db"))
+    print(config.get_element("legacy_futures_contracts_collection"))
     testDB = testClient[config.get_element("legacy_ib_data_db")]
     testColl = testDB[config.get_element("legacy_futures_contracts_collection")]
     docs = list(testColl.find({'symbol': 'ES'}))
     print(len(docs))
+    #remove some legacy fields that are no longer needed
+    fields_to_remove=['most_recent_contract_tag','min_multiplier_tag', 'priority_tag' ]
+    for field_to_remove in fields_to_remove:
+        testColl.update_many(
+            {},
+            {"$unset": {field_to_remove: ""}}
+        )
     #print(docs)
 
     

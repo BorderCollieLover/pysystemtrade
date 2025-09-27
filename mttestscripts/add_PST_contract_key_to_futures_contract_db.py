@@ -127,7 +127,7 @@ def add_PST_contract_info_to_IB_futures_contract_db():
 
 if __name__ == "__main__":
     contracts_df = add_PST_contract_info_to_IB_futures_contract_db()
-    if not contracts_df.empty:
-        contracts_df.to_csv('updated_contracts_info.csv', index=False)
+    #if not contracts_df.empty:
+    #    contracts_df.to_csv('updated_contracts_info.csv', index=False)
 
     

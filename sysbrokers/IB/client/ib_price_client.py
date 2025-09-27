@@ -273,7 +273,9 @@ class ibPriceClient(ibContractsClient):
         """
 
         last_call = self.last_historic_price_calltime
-        self._avoid_pacing_violation(last_call)
+        #Min Tang 2025-09-25 avoid pacing only for 10 sec and 1 sec data
+        if barSizeSetting in ["10 secs", "1 secs"]: 
+            self._avoid_pacing_violation(last_call)
 
         ## If live data is available a request for delayed data would be ignored by TWS.
         self.ib.reqMarketDataType(3)

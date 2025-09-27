@@ -4,6 +4,13 @@ import os
 import pandas as pd
 from glob import glob
 from sysdata.config.production_config import get_production_config, Config
+from sysdata.data_blob import dataBlob
+from sysproduction.update_multiple_adjusted_prices import calc_update_adjusted_prices
+from sysproduction.data.prices import (
+    diagPrices,
+    updatePrices,
+    get_valid_instrument_code_from_user,
+)
 
 
 def is_file1_newer(file1_path, file2_path):
@@ -128,6 +135,9 @@ def fix_str_index_to_datetime(parquet_name, tzinfo='UTC'):
     #if the index of a time series parquet is not recognized as datetime 
     # try to convert it using pd.to_datetime() to fix the issue 
 
+
+
+
 if __name__ == "__main__":
     """ system_roll_calendars_path = os.path.join('data', 'futures', 'roll_calendars_csv')
     generated_roll_calendars_path = os.path.join('data', 'futures', 'roll_calendars_from_db')
@@ -156,12 +166,13 @@ if __name__ == "__main__":
     src_parquet = os.path.join(source_file_path, file_name+'.parquet')
     #convert_parquet_to_csv(src_parquet, 'foo.csv')
 
-    filename = '/mnt/sda1/data/parquet/ib/RTH_1_day/UINK5_772076870.parquet'
-    convert_parquet_to_csv(filename, '/mnt/sda1/foo.csv')
+    #filename = '/mnt/sda1/data/parquet/ib/RTH_1_day/UINK5_772076870.parquet'
+    #convert_parquet_to_csv(filename, '/mnt/sda1/foo.csv')
 
     #csv_file = '/mnt/sda1/data/DATABackup/ib/RTH_1_day/ECOG8_803750278.csv'
     #parquet_file = '/mnt/sda1/data/parquet/ib/RTH_1_day/ECOG8_803750278.parquet'
     #ib_ohlcv_csv_to_parquet(csv_file, parquet_file)
+
 
 
     #csv_file = '/mnt/sda1/data/DATABackup/ib/RTH_1_day/FDIV  25L19_461926858.csv'

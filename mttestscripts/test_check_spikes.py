@@ -6,6 +6,7 @@ from sysdata.tools.manual_price_checker import *
 from sysdata.data_blob import dataBlob
 from sysdata.config.production_config import get_production_config, Config
 from sysdata.csv.csv_instrument_data import csvFuturesInstrumentData
+from sysdata.csv.csv_adjusted_prices import csvFuturesAdjustedPricesData
 from sysdata.parquet.parquet_access import ParquetAccess
 from sysdata.parquet.parquet_access import EXTENSION as PARQUET_EXTENSION
 from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData, CONTRACT_COLLECTION,from_contract_and_freq_to_key,from_key_to_freq_and_contract
@@ -20,6 +21,7 @@ from syslogdiag.email_via_db_interface import send_production_mail_msg
 from mttestscripts.files_tool import list_all_instruments_from_a_directory
 from mttestscripts.ohlc_parquet_cleanup_tools import ib_parquet_folders, find_files_by_filter, test_for_expiry_past_n_days, return_total_volume
 from mtfuturesdata.mtMongoClient import mtMongoClient
+from syscore.fileutils import get_resolved_pathname
 
 
 list_of_frequencies = [HOURLY_FREQ, DAILY_PRICE_FREQ]
@@ -55,7 +57,8 @@ no_spike_file_filters = [
 ]
 
 #PST instruments and contracts to skip from spike detection: 
-skip_instruments = ['MARS-ARGUS', 'PIPELINE', 'FTSE100-DIV', 'MIB-DIVI', 'HEAT-DEG-AMS','HEAT-DEG-LON', 'HEAT-DEG-NY', 'HOUSE-BO', 'HOUSE-CG', 'HOUSE-DC', 'HOUSE-DN', 'HOUSE-LA', 'HOUSE-LV', 'HOUSE-MI', 'HOUSE-NY', 'HOUSE-SD', 'HOUSE-SF', 'HOUSE-US']
+skip_instruments = ['MARS-ARGUS', 'PIPELINE', 'FTSE100-DIV', 'MIB-DIVI', 'HEAT-DEG-AMS','HEAT-DEG-LON', 'HEAT-DEG-NY', 'HOUSE-BO', 'HOUSE-CG', 'HOUSE-DC', 'HOUSE-DN', ''
+                    'HOUSE-LA', 'HOUSE-LV', 'HOUSE-MI', 'HOUSE-NY', 'HOUSE-SD', 'HOUSE-SF', 'HOUSE-US', 'EU-BANKS-DIVI', 'SMI-DIV']
 skip_contracts = [futuresContract('CRUDE_ICE', '20200500'),futuresContract('CRUDE_W', '20200500'), futuresContract('CRUDE_W_mini', '20200500')]
 
 #generate a list of files to skip when checking for spikes
@@ -486,11 +489,69 @@ def mt_manual_check_spike_in_pst_from_list():
             pickle.dump(files_to_manually_check, file)
     return
 
-        
+#Check for spikes in adjusted prices, which is the last step to check that futures contract prices data is clean
+def test_spikes_in_adjusted_price():
+    data = dataBlob(log_name="Update-Multiple-Adjusted-Prices")
+    diag_prices = diagPrices(data)
+    #list_of_codes = diag_prices.get_list_of_instruments_in_multiple_prices()
+    list_of_codes = ['PALLAD', 'US10', 'US30', 'CORN', 'CAC', 'LIVECOW', 'BUND', 'WHEAT', 'BOBL', 'SMI', 'SOYBEAN_mini', 'NZD', 'GAS_US_mini', 'OAT', 'US2', 'US5', 'NASDAQ_micro', 'GOLD_micro', 'GBP', 'CRUDE_W_micro', 'COPPER-micro', 'SP500_micro', 'KR3', 'VIX', 'AUD_micro', 'JPY', 'EUROSTX', 'AEX', 'PLAT', 'LEANHOG', 'NIKKEI', 'SOFR', 'US20', 'BTP', 'HEATOIL', 'V2X', 'KR10', 'EUR_micro', 'KOSPI_mini', 'MXP']
+    for instrument_code in list_of_codes:
+        existing_adjusted_prices = diag_prices.get_adjusted_prices(instrument_code)
+        existing_adjusted_prices_df = existing_adjusted_prices.to_frame() 
+        spike_prsent = mt_test_price_spike_in_ohlc(existing_adjusted_prices_df, column_to_check='price')
+        if spike_prsent:
+            print('Spike present in adjusted prices for '+instrument_code)
+            mt_manual_check_spike_in_ohlc(existing_adjusted_prices_df, column_list=['price'])
+    
+    
+def test_spikes_in_andy_adjusted_prices():
+    csvAdjustedPrices = csvFuturesAdjustedPricesData('/mnt/sda1/pst-csv-data/data/adjusted_prices_csv')
+    list_of_codes = csvAdjustedPrices.get_list_of_instruments()
+    #print(list_of_codes)
+    
+    for instrument_code in list_of_codes:
+        adjusted_prices = csvAdjustedPrices._get_adjusted_prices_without_checking(instrument_code)
+        adjusted_prices_df = pd.DataFrame(adjusted_prices)
+        spike_prsent = mt_test_price_spike_in_ohlc(adjusted_prices_df, column_to_check='price')
+        if spike_prsent:
+            print('Spike present in adjusted prices for '+instrument_code)
+            mt_manual_check_spike_in_ohlc(adjusted_prices_df, column_list=['price'])
 
+def count_stale_prices_in_an_ohlc(ohlc_data, column_name = 'price'):
+    if ohlc_data is None or ohlc_data.empty:
+        return 0
+
+    if column_name not in ohlc_data.columns:
+        return 0
+
+
+    data = ohlc_data[column_name]
+    data_length = len(data)
+
+    data_stale = data.eq(data.shift(1)).sum()
+    return(data_length, data_stale)
     
 
+def count_data_staleness_in_adjusted_prices(adjust_csv_folder, column_name = 'price'    ):
+    csvAdjustedPrices = csvFuturesAdjustedPricesData(adjust_csv_folder)
+    list_of_codes = csvAdjustedPrices.get_list_of_instruments()
+    print(list_of_codes)
+    list_of_codes = ['PALLAD', 'US10', 'US30', 'CORN', 'CAC', 'LIVECOW', 'BUND', 'WHEAT', 'BOBL', 'SMI', 'SOYBEAN_mini', 'NZD', 'GAS_US_mini', 'OAT', 'US2', 'US5', 'NASDAQ_micro', 'GOLD_micro', 'GBP', 'CRUDE_W_micro', 'COPPER-micro', 'SP500_micro', 'KR3', 'VIX', 'AUD_micro', 'JPY', 'EUROSTX', 'AEX', 'PLAT', 'LEANHOG', 'NIKKEI', 'SOFR', 'US20', 'BTP', 'HEATOIL', 'V2X', 'KR10', 'EUR_micro', 'KOSPI_mini', 'MXP']
 
+    total_data_rows = 0 
+    total_stale_prices = 0 
+    for instrument_code in list_of_codes:
+        adjusted_prices = csvAdjustedPrices._get_adjusted_prices_without_checking(instrument_code)
+        adjusted_prices_df = pd.DataFrame(adjusted_prices)
+        data_length, stale_prices = count_stale_prices_in_an_ohlc(adjusted_prices_df, column_name=column_name)
+        total_data_rows += data_length
+        total_stale_prices += stale_prices
+
+    print('Total data rows: '+str(total_data_rows))
+    print('Total stale prices: '+str(total_stale_prices))
+    print('Overall data staleness (stale prices/data rows): '+str(total_stale_prices/total_data_rows))
+
+        
 if __name__ == "__main__":
     #This will go through all price parquets in the ib directory, and scan all ohlc columns for possible spikes. 
     #Files that need to be manually checked and corrected for spikes are saved in a pickle object
@@ -518,8 +579,16 @@ if __name__ == "__main__":
     #test_for_spikes_for_all_pst_parquets()
 
     #Interactively fix spikes in pst
-    mt_manual_check_spike_in_pst_from_list()
+    #mt_manual_check_spike_in_pst_from_list()
 
+
+    #Check for spikes in adjusted prices -- last step to check that futures contract prices data is clean 
+    #test_spikes_in_adjusted_price()
+
+    #test_spikes_in_andy_adjusted_prices()
+    count_data_staleness_in_adjusted_prices('/mnt/sda1/pst-csv-data/data/adjusted_prices_csv', column_name = 'price')
+    count_data_staleness_in_adjusted_prices('/mnt/sda1/pysystemtrade/data/futures/adjusted_prices_csv', column_name = 'price')
+    
 
 
     ###################Below are just for testing purposes ############################

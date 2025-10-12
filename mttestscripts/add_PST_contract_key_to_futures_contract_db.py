@@ -114,9 +114,9 @@ def add_PST_contract_info_to_IB_futures_contract_db():
                 db_update_df = pd.concat([db_update_df, contracts_df], ignore_index=True)
             db_update_df.to_csv('updated_contracts_info.csv', index=False)
         
-        processed_instruments += [instrument_code]
-        with open (instrument_pickle_file, 'wb') as file: 
-            pickle.dump(processed_instruments, file)
+        #processed_instruments += [instrument_code]
+        #with open (instrument_pickle_file, 'wb') as file: 
+        #    pickle.dump(processed_instruments, file)
 
             
     

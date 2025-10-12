@@ -629,6 +629,7 @@ if __name__ == "__main__":
     contract_details = get_contract_details_from_mongo(contract)
     #print(contract_details)
 
+    dedup_all_pst_contract_prices()
     #Step 1: 
     #remove_zero_volume_bars_all_contracts()
     #Step 2: 
@@ -642,5 +643,5 @@ if __name__ == "__main__":
 
     #Further Cleaning
     #Step 5: 
-    cleanup_pst_parquets_by_rules()
+    #cleanup_pst_parquets_by_rules()
 

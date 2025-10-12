@@ -25,7 +25,7 @@ from syscore.fileutils import get_resolved_pathname
 
 
 list_of_frequencies = [HOURLY_FREQ, DAILY_PRICE_FREQ]
-max_price_spike=80
+max_price_spike=8
 MINIMUM_ROWS_TO_CHECK_FOR_SPIKES = 10 
 
 #These are files that can be skipped when checking for spikes 
@@ -457,6 +457,40 @@ def test_for_spikes2_for_all_pst_parquets(daily_change_threshold=5, intraday_thr
     return
 
 
+def mt_manual_check_spike_in_pst_for_instrument(instrument_code, column_list=['OPEN', 'HIGH', 'LOW', 'FINAL'], overwrite=True):
+    data = dataBlob(log_name="update_historical_prices")
+    diag_prices = diagPrices(data)
+    parquet_access = ParquetAccess(get_production_config().get_element("parquet_store"))
+    parquet_price = parquetFuturesContractPriceData(parquet_access)
+    #broker_data_source = dataBroker(data)
+    price_dts = sorted(diag_prices.contract_dates_with_price_data_for_instrument_code(instrument_code))
+        
+    for contract_date in price_dts:
+        contract = futuresContract(instrument_code, contract_date)
+        for frequency in list_of_frequencies: 
+            if parquet_price.has_price_data_for_contract_at_frequency(contract, frequency):
+                print('Checking '+str(contract)+' at frequency '+str(frequency))
+                pst_prices = parquet_price._get_prices_at_frequency_for_contract_object_no_checking(contract, frequency)
+                pst_prices_df = pd.DataFrame(pst_prices)
+                spike_present = False
+                for column in column_list:
+                    try:
+                        column_spike_present = mt_test_price_spike_in_ohlc(pst_prices_df, column_to_check=column)
+                    except Exception as e: 
+                        ...
+                    if column_spike_present: 
+                        spike_present = True
+                        break
+                
+                if spike_present:
+                    ident = from_contract_and_freq_to_key(contract=contract, frequency=frequency)
+                    parquet_file = parquet_access._get_filename_given_data_type_and_identifier(CONTRACT_COLLECTION, ident)
+                    mt_manual_check_spike_in_a_parquet(parquet_file, column_list=column_list, overwrite=overwrite)
+                    write_merged_prices_for_contract(data, contract, list_of_frequencies)
+
+    return
+    
+    
 
 
 def mt_manual_check_spike_in_pst_from_list():
@@ -536,7 +570,7 @@ def count_data_staleness_in_adjusted_prices(adjust_csv_folder, column_name = 'pr
     csvAdjustedPrices = csvFuturesAdjustedPricesData(adjust_csv_folder)
     list_of_codes = csvAdjustedPrices.get_list_of_instruments()
     print(list_of_codes)
-    list_of_codes = ['PALLAD', 'US10', 'US30', 'CORN', 'CAC', 'LIVECOW', 'BUND', 'WHEAT', 'BOBL', 'SMI', 'SOYBEAN_mini', 'NZD', 'GAS_US_mini', 'OAT', 'US2', 'US5', 'NASDAQ_micro', 'GOLD_micro', 'GBP', 'CRUDE_W_micro', 'COPPER-micro', 'SP500_micro', 'KR3', 'VIX', 'AUD_micro', 'JPY', 'EUROSTX', 'AEX', 'PLAT', 'LEANHOG', 'NIKKEI', 'SOFR', 'US20', 'BTP', 'HEATOIL', 'V2X', 'KR10', 'EUR_micro', 'KOSPI_mini', 'MXP']
+    #list_of_codes = ['PALLAD', 'US10', 'US30', 'CORN', 'CAC', 'LIVECOW', 'BUND', 'WHEAT', 'BOBL', 'SMI', 'SOYBEAN_mini', 'NZD', 'GAS_US_mini', 'OAT', 'US2', 'US5', 'NASDAQ_micro', 'GOLD_micro', 'GBP', 'CRUDE_W_micro', 'COPPER-micro', 'SP500_micro', 'KR3', 'VIX', 'AUD_micro', 'JPY', 'EUROSTX', 'AEX', 'PLAT', 'LEANHOG', 'NIKKEI', 'SOFR', 'US20', 'BTP', 'HEATOIL', 'V2X', 'KR10', 'EUR_micro', 'KOSPI_mini', 'MXP']
 
     total_data_rows = 0 
     total_stale_prices = 0 
@@ -586,9 +620,12 @@ if __name__ == "__main__":
     #test_spikes_in_adjusted_price()
 
     #test_spikes_in_andy_adjusted_prices()
-    count_data_staleness_in_adjusted_prices('/mnt/sda1/pst-csv-data/data/adjusted_prices_csv', column_name = 'price')
+    #count_data_staleness_in_adjusted_prices('/mnt/sda1/pst-csv-data/data/adjusted_prices_csv', column_name = 'price')
     count_data_staleness_in_adjusted_prices('/mnt/sda1/pysystemtrade/data/futures/adjusted_prices_csv', column_name = 'price')
-    
+
+    #for instrument_code in ['CAN-GOLD','TSE60']:
+    #    mt_manual_check_spike_in_pst_for_instrument(instrument_code, column_list=['OPEN', 'HIGH', 'LOW', 'FINAL'], overwrite=True)
+
 
 
     ###################Below are just for testing purposes ############################

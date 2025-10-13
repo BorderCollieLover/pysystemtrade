@@ -10,7 +10,7 @@ MINIMUM_EXTRA_DATA_ROWS = 10
 def find_expired_price_contracts():
     #Fine out the times when price contract has already expired
     pst_multiple_csv_folder = '/mnt/sda1/pysystemtrade/data/futures/multiple_prices_csv/'
-    pst_multiple_csv_folder = '/mnt/sda1/pst-csv-data/data/multiple_prices_csv'
+    #pst_multiple_csv_folder = '/mnt/sda1/pst-csv-data/data/multiple_prices_csv'
     csvMultiplePrices = csvFuturesMultiplePricesData(pst_multiple_csv_folder)
     list_of_codes = csvMultiplePrices.get_list_of_instruments()
 
@@ -21,8 +21,12 @@ def find_expired_price_contracts():
         data['index_dt'] = [dt.strftime("%Y%m")+"00" for dt in data.index]
         #print(data)
         #print(sum(data['index_dt'] > data['PRICE_CONTRACT']))
-        total_number_expiredness += sum(data['index_dt'] > data['PRICE_CONTRACT'])
-        total_number_contract_days += len(data)
+        if sum(data['index_dt'] > data['PRICE_CONTRACT']) > 0: 
+            comparison_result = data['index_dt'] > data['PRICE_CONTRACT']
+            first_index = comparison_result.idxmin()
+            total_number_expiredness += sum(data['index_dt'] > data['PRICE_CONTRACT'])
+            total_number_contract_days += len(data)
+            print(instrument, first_index) # instruments that hold expired price contracts and the first date. Multiple prices with expired price contracts should be discarded....... 
         #break
     print(total_number_expiredness, total_number_contract_days)
 
@@ -106,9 +110,9 @@ def patch_andy_multiple_prices():
 if __name__ == "__main__": 
     #starting_dates = compared_two_adjusted_prices_repos()
     #starting_dates.to_csv('foo.csv')
-    patch_andy_multiple_prices()
+    #patch_andy_multiple_prices()
 
-    #find_expired_price_contracts()
+    find_expired_price_contracts()
 ""
 
 

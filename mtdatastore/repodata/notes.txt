@@ -1,2 +1,6 @@
-multiple_prices_csv:  the Rob Carver repo multiple prices 
+multiple_prices_csv:  the Rob Carver repo multiple prices, from Github. The only corrections are the 0s in HANGENT and MSCITAIWAN 
 multiple_prices_csv_cleaned: Cleaned obvious issues in the above repo multiple prices, notably when PRICE_CONTRACT has already expired. See : https://www.notion.so/Data-Clean-Up-20250926-27a39604e82e80a79cdeeb4a37b173b3?source=copy_link
+multiple_prices_csv_cleaned_and_combined_with_andy: combine the above cleaned multiple prices, with Andy's smaller set of more updated multiple prices. See the same notes above.  
+
+adjusted_prices_csv: the Rob Carver repo adjusted prices, from Github. No corrections. Note that adjusted prices should always be re-generated once multiple prices are updated. So the adjusted prices repo is not as important. 
+

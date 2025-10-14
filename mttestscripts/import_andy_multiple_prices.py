@@ -4,6 +4,7 @@
 import pandas as pd
 from sysdata.csv.csv_adjusted_prices import csvFuturesAdjustedPricesData
 from sysdata.csv.csv_multiple_prices import csvFuturesMultiplePricesData
+from sysobjects.multiple_prices import futuresMultiplePrices
 
 MINIMUM_EXTRA_DATA_ROWS = 10 
 
@@ -55,9 +56,86 @@ def compared_two_adjusted_prices_repos ():
         else:
             output_data.loc[len(output_data)] = instrument_data
 
-    return output_data
+    return futuresMultiplePrices(output_data)
 
-def patch_andy_multiple_prices():
+def patch_rob_multiple_prices_to_andy_multiple_prices(rob_multiple_prices, andy_multiple_prices):
+    rob_start_dt = rob_multiple_prices.index[0]
+    andy_start_dt = andy_multiple_prices.index[0]
+
+    if (rob_start_dt < andy_start_dt):
+        earlier_rob_dts = rob_multiple_prices.index[rob_multiple_prices.index<=andy_start_dt]
+
+        last_dt = earlier_rob_dts[-1]
+            
+        if last_dt == andy_start_dt: 
+        #ensures that the contracts are the same 
+            if not ((rob_multiple_prices.loc[last_dt, 'PRICE_CONTRACT'] == andy_multiple_prices.loc[andy_start_dt, "PRICE_CONTRACT"]) and 
+                    (rob_multiple_prices.loc[last_dt, 'CARRY_CONTRACT'] == andy_multiple_prices.loc[andy_start_dt, "CARRY_CONTRACT"]) and 
+                    (rob_multiple_prices.loc[last_dt, 'FORWARD_CONTRACT'] == andy_multiple_prices.loc[andy_start_dt, "FORWARD_CONTRACT"])):
+                print("Warning: different contracts for the same time")
+        else: 
+            if not ((rob_multiple_prices.loc[last_dt, 'PRICE_CONTRACT'] <= andy_multiple_prices.loc[andy_start_dt, "PRICE_CONTRACT"]) and
+                    (rob_multiple_prices.loc[last_dt, 'CARRY_CONTRACT'] <= andy_multiple_prices.loc[andy_start_dt, "CARRY_CONTRACT"]) and
+                    (rob_multiple_prices.loc[last_dt, 'FORWARD_CONTRACT'] <= andy_multiple_prices.loc[andy_start_dt, "FORWARD_CONTRACT"])): 
+                print("Warning: later roll in Andy's contract")
+
+        earlier_rob_data = rob_multiple_prices.loc[rob_multiple_prices.index<andy_start_dt]
+        patched_data = pd.concat([earlier_rob_data, andy_multiple_prices])
+        return patched_data
+    else: 
+        return andy_multiple_prices
+
+def create_new_multiple_prices_from_rob_and_andy_repos(output_folder):
+    #combine Rob and Andy's data to create an updated set of multiple prices 
+    #For instruments that Andy has data:
+    # 1. Use Andy's data if it starts earlier than Rob's, or if Rob has just a few (less than MINIMUM_EXTRA_DATA_ROWS) extra data points 
+    # 2. Otherwise, patch earlier Rob data to Andy's data to create a patched up multiple prices, except for a few instances when we would still use Andy's data 
+    # See Notion notes 
+
+    pst_multiple_csv_folder = '/mnt/sda1/pysystemtrade/data/futures/multiple_prices_csv/'
+    csvMultiplePrices = csvFuturesMultiplePricesData(pst_multiple_csv_folder)
+    list_of_codes = csvMultiplePrices.get_list_of_instruments()
+    print(list_of_codes)
+
+    andy_multiple_csv_folder = '/mnt/sda1/pst-csv-data/data/multiple_prices_csv'
+    csvMultiplePrices2 = csvFuturesMultiplePricesData(andy_multiple_csv_folder)
+    andy_multiple_prices_codes = csvMultiplePrices2.get_list_of_instruments()
+    print(list_of_codes)
+
+    output_multiple_prices_csv_folder = output_folder
+    combined_multiple_prices = csvFuturesMultiplePricesData(output_multiple_prices_csv_folder)
+    special_instruments = ['NASDAQ_micro', 'LEANHOG', 'SOFR']
+
+    for instrument in list_of_codes: 
+        if instrument not in andy_multiple_prices_codes:
+            rob_multiple_prices = csvMultiplePrices._get_multiple_prices_without_checking(instrument)
+            combined_multiple_prices._add_multiple_prices_without_checking_for_existing_entry(instrument, rob_multiple_prices)
+        else:
+            rob_multiple_prices = csvMultiplePrices._get_multiple_prices_without_checking(instrument)
+            andy_multiple_prices = csvMultiplePrices2._get_multiple_prices_without_checking(instrument)
+            rob_start_dt = rob_multiple_prices.index[0]
+            andy_start_dt = andy_multiple_prices.index[0]
+            #print(rob_start_dt)
+            #print(andy_start_dt)
+            if (rob_start_dt > andy_start_dt):
+                combined_multiple_prices._add_multiple_prices_without_checking_for_existing_entry(instrument, andy_multiple_prices)
+            else:
+                earlier_rob_dts = rob_multiple_prices.index[rob_multiple_prices.index<=andy_start_dt]
+                if len(earlier_rob_dts) < MINIMUM_EXTRA_DATA_ROWS: 
+                    combined_multiple_prices._add_multiple_prices_without_checking_for_existing_entry(instrument, andy_multiple_prices)
+                else:
+                    #patch earlier Rob data with Andy's data, except for a few instruments that should use Andy's data instead of patching
+                    # as determined after manually checking the data 
+                    if instrument in special_instruments: 
+                        combined_multiple_prices._add_multiple_prices_without_checking_for_existing_entry(instrument, andy_multiple_prices)
+                    else:
+                        patched_multiple_prices = patch_rob_multiple_prices_to_andy_multiple_prices(rob_multiple_prices, andy_multiple_prices)
+                        combined_multiple_prices._add_multiple_prices_without_checking_for_existing_entry(instrument, patched_multiple_prices)
+    return
+
+
+def interactive_check_rob_and_andy_multiple_prices():
+    #This will go through the overlapping instruments as an initial check of whether earlier PST (Rob's) data can be patched to Andy's data
     pst_multiple_csv_folder = '/mnt/sda1/pysystemtrade/data/futures/multiple_prices_csv/'
     csvMultiplePrices = csvFuturesMultiplePricesData(pst_multiple_csv_folder)
     list_of_codes = csvMultiplePrices.get_list_of_instruments()
@@ -70,9 +148,9 @@ def patch_andy_multiple_prices():
     
     for instrument in list_of_codes: 
         rob_multiple_prices = csvMultiplePrices._get_multiple_prices_without_checking(instrument)
-        andy_mutliple_prices = csvMultiplePrices2._get_multiple_prices_without_checking(instrument)
+        andy_multiple_prices = csvMultiplePrices2._get_multiple_prices_without_checking(instrument)
         rob_start_dt = rob_multiple_prices.index[0]
-        andy_start_dt = andy_mutliple_prices.index[0]
+        andy_start_dt = andy_multiple_prices.index[0]
         #print(rob_start_dt)
         #print(andy_start_dt)
         if (rob_start_dt < andy_start_dt):
@@ -83,20 +161,20 @@ def patch_andy_multiple_prices():
             
             if last_dt == andy_start_dt: 
             #ensures that the contracts are the same 
-                if not ((rob_multiple_prices.loc[last_dt, 'PRICE_CONTRACT'] == andy_mutliple_prices.loc[andy_start_dt, "PRICE_CONTRACT"]) and 
-                        (rob_multiple_prices.loc[last_dt, 'CARRY_CONTRACT'] == andy_mutliple_prices.loc[andy_start_dt, "CARRY_CONTRACT"]) and 
-                        (rob_multiple_prices.loc[last_dt, 'FORWARD_CONTRACT'] == andy_mutliple_prices.loc[andy_start_dt, "FORWARD_CONTRACT"])):
+                if not ((rob_multiple_prices.loc[last_dt, 'PRICE_CONTRACT'] == andy_multiple_prices.loc[andy_start_dt, "PRICE_CONTRACT"]) and 
+                        (rob_multiple_prices.loc[last_dt, 'CARRY_CONTRACT'] == andy_multiple_prices.loc[andy_start_dt, "CARRY_CONTRACT"]) and 
+                        (rob_multiple_prices.loc[last_dt, 'FORWARD_CONTRACT'] == andy_multiple_prices.loc[andy_start_dt, "FORWARD_CONTRACT"])):
                     print("Warning: different contracts for the same time")
             else: 
-                if not ((rob_multiple_prices.loc[last_dt, 'PRICE_CONTRACT'] <= andy_mutliple_prices.loc[andy_start_dt, "PRICE_CONTRACT"]) and
-                        (rob_multiple_prices.loc[last_dt, 'CARRY_CONTRACT'] <= andy_mutliple_prices.loc[andy_start_dt, "CARRY_CONTRACT"]) and
-                        (rob_multiple_prices.loc[last_dt, 'FORWARD_CONTRACT'] <= andy_mutliple_prices.loc[andy_start_dt, "FORWARD_CONTRACT"])): 
+                if not ((rob_multiple_prices.loc[last_dt, 'PRICE_CONTRACT'] <= andy_multiple_prices.loc[andy_start_dt, "PRICE_CONTRACT"]) and
+                        (rob_multiple_prices.loc[last_dt, 'CARRY_CONTRACT'] <= andy_multiple_prices.loc[andy_start_dt, "CARRY_CONTRACT"]) and
+                        (rob_multiple_prices.loc[last_dt, 'FORWARD_CONTRACT'] <= andy_multiple_prices.loc[andy_start_dt, "FORWARD_CONTRACT"])): 
                     print("Warning: later roll in Andy's contract")
             print(instrument)
             print('Rob Repo Data: -----------------------------------------------')
             print(rob_multiple_prices.loc[last_dt])
             print('Andy Repo Data: ----------------------------------------------')
-            print(andy_mutliple_prices.iloc[0])
+            print(andy_multiple_prices.iloc[0])
             input_str = ''
             while not ((input_str == 'Yes') or (input_str == 'No')):
                 input_str = input("Patch Andy's data with PST repo? (Yes/No)")
@@ -112,7 +190,11 @@ if __name__ == "__main__":
     #starting_dates.to_csv('foo.csv')
     #patch_andy_multiple_prices()
 
-    find_expired_price_contracts()
+    #find_expired_price_contracts()
+
+    output_folder = '/mnt/sda1/pysystemtrade/mtdatastore/repodata/multiple_prices_csv_cleaned_and_combined_with_andy/'
+    create_new_multiple_prices_from_rob_and_andy_repos(output_folder)
+
 ""
 
 

@@ -19,13 +19,13 @@ from syscore.dateutils import Frequency, DAILY_PRICE_FREQ, HOURLY_FREQ
 from syscore.pandas.merge_data_keeping_past_data import _calculate_change_in_vol_normalised_units
 from syslogdiag.email_via_db_interface import send_production_mail_msg
 from mttestscripts.files_tool import list_all_instruments_from_a_directory
-from mttestscripts.ohlc_parquet_cleanup_tools import ib_parquet_folders, find_files_by_filter, test_for_expiry_past_n_days, return_total_volume
+from mttestscripts.ohlc_parquet_cleanup_tools import ib_parquet_folders, find_files_by_filter
 from mtfuturesdata.mtMongoClient import mtMongoClient
 from syscore.fileutils import get_resolved_pathname
 
 
 list_of_frequencies = [HOURLY_FREQ, DAILY_PRICE_FREQ]
-max_price_spike=8
+max_price_spike=80
 MINIMUM_ROWS_TO_CHECK_FOR_SPIKES = 10 
 
 #These are files that can be skipped when checking for spikes 
@@ -151,7 +151,7 @@ def mt_test_price_spike_in_ohlc(ohlc_data, column_to_check):
 #Test for spikes in all parquet files in a folder
 #The column list is the list of columns to check, it should contain all price related columns (ohlc) for the particular data set. e.g. ['open', 'high', 'low', 'close'] for IB data, ['OPEN', 'HIGH', 'LOW', 'FINAL'] for PST
 #The default behavior of PST price checker is to check the first column, usually the open 
-def mt_test_spike_in_all_parquets_in_a_folder(folder_name, column_list=['open', 'high', 'low', 'close']):
+def mt_test_spike_in_all_parquets_in_a_folder(folder_name, column_list=['open', 'high', 'low', 'close'], date=None):
     all_parquets = list_all_instruments_from_a_directory(folder_name, extension='parquet')
     data = dataBlob(log_name="update_historical_prices")
 
@@ -167,6 +167,11 @@ def mt_test_spike_in_all_parquets_in_a_folder(folder_name, column_list=['open', 
 
     for parquet_file in all_parquets: 
         full_file_path = os.path.join(folder_name, parquet_file)
+
+        if date is not None:
+            if not file_modified_after_date(full_file_path, date):
+                continue
+
         if full_file_path in files_to_manually_check:
             continue
 
@@ -290,7 +295,7 @@ def mt_manual_check_spike_in_ib_from_list():
 def mt_test_spike_in_all_ib_parquets():
     folders = ['/mnt/sda1/data/parquet/ib/RTH_1_day/', '/mnt/sda1/data/parquet/ib/CTH_1_hour/', '/mnt/sda1/data/parquet/ib/CTH_15_mins/', '/mnt/sda1/data/parquet/ib/CTH_5_mins/']
     for folder in folders:
-        mt_test_spike_in_all_parquets_in_a_folder(folder)
+        mt_test_spike_in_all_parquets_in_a_folder(folder=folder, date=get_production_config().get_element('last_ib_spike_check_date'))
 
 def test_for_spikes_from_daily_changes_and_intraday_variations(ohlc_data, daily_change_threshold=5, intraday_threshold=5, price_columns = ['open', 'high', 'low', 'close']):
     if ohlc_data is None: 
@@ -317,7 +322,16 @@ def test_for_spikes_from_daily_changes_and_intraday_variations(ohlc_data, daily_
     if max(ohlc_price_data['MINMAX']) > intraday_threshold:
         return True
 
+def file_modified_after_date(filename, date):
+    if not os.path.isfile(filename):
+        return False
     
+    file_mod_time = os.path.getmtime(filename)
+    file_mod_date = pd.to_datetime(file_mod_time, unit='s').date()
+    if file_mod_date > date:
+        return True
+    else:
+        return False
     
 
 def test_for_spikes2_for_a_parquet(parquet_file, daily_change_threshold=5, intraday_threshold=5, price_columns = ['open', 'high', 'low', 'close']):
@@ -361,6 +375,10 @@ def test_for_spikes2_for_all_ib_parquets(daily_change_threshold=5, intraday_thre
             if full_parquet_path in skip_files:
                 continue
             #print(full_parquet_path)
+
+            if file_modified_after_date(full_parquet_path, get_production_config().get_element('last_ib_spike_check_date')) == False:
+                continue
+
             spike_present = test_for_spikes2_for_a_parquet(full_parquet_path, daily_change_threshold, intraday_threshold, price_columns)
             if spike_present: 
                 files_to_manually_check = files_to_manually_check + [full_parquet_path]
@@ -389,6 +407,13 @@ def test_for_spikes_for_all_pst_parquets(price_columns = ['OPEN', 'HIGH', 'LOW',
                 continue
             for frequency in list_of_frequencies: 
                 if parquet_price.has_price_data_for_contract_at_frequency(contract, frequency):
+                    ident = from_contract_and_freq_to_key(contract=contract, frequency=frequency)
+                    filename = parquet_access._get_filename_given_data_type_and_identifier(CONTRACT_COLLECTION, ident)
+
+                    if file_modified_after_date(filename, get_production_config().get_element('last_pst_spike_check_date')) == False:
+                        continue
+
+
                     pst_prices = parquet_price._get_prices_at_frequency_for_contract_object_no_checking(contract, frequency)
                     pst_prices_df = pd.DataFrame(pst_prices)
 
@@ -440,6 +465,11 @@ def test_for_spikes2_for_all_pst_parquets(daily_change_threshold=5, intraday_thr
                 continue
             for frequency in list_of_frequencies: 
                 if parquet_price.has_price_data_for_contract_at_frequency(contract, frequency):
+                    ident = from_contract_and_freq_to_key(contract=contract, frequency=frequency)
+                    filename = parquet_access._get_filename_given_data_type_and_identifier(CONTRACT_COLLECTION, ident)
+
+                    if file_modified_after_date(filename, get_production_config().get_element('last_pst_spike_check_date')) == False:
+                        continue
                     pst_prices = parquet_price._get_prices_at_frequency_for_contract_object_no_checking(contract, frequency)
                     pst_prices_df = pd.DataFrame(pst_prices)
                     spike_present = test_for_spikes_from_daily_changes_and_intraday_variations(pst_prices_df,daily_change_threshold=5,intraday_threshold=5,price_columns=price_columns)
@@ -498,7 +528,8 @@ def mt_manual_check_spike_in_pst_from_list():
     #2. For each file, run the interactive fix process 
     #3. Update the mixed frequency contract 
     data = dataBlob(log_name="update_historical_prices")
-    pickle_file_name = 'pst_spike2_filelist.pkl'
+    #pickle_file_name = 'pst_spike2_filelist.pkl'
+    pickle_file_name = 'pst_spike_filelist.pkl'
     if os.path.exists(pickle_file_name):
         with open(pickle_file_name,'rb') as file:  
             files_to_manually_check = pickle.load(file)
@@ -610,7 +641,7 @@ if __name__ == "__main__":
     
     #Find spikes2 in PST Data
     #test_for_spikes2_for_all_pst_parquets()
-    #test_for_spikes_for_all_pst_parquets()
+    test_for_spikes_for_all_pst_parquets()
 
     #Interactively fix spikes in pst
     #mt_manual_check_spike_in_pst_from_list()
@@ -621,7 +652,7 @@ if __name__ == "__main__":
 
     #test_spikes_in_andy_adjusted_prices()
     #count_data_staleness_in_adjusted_prices('/mnt/sda1/pst-csv-data/data/adjusted_prices_csv', column_name = 'price')
-    count_data_staleness_in_adjusted_prices('/mnt/sda1/pysystemtrade/data/futures/adjusted_prices_csv', column_name = 'price')
+    #count_data_staleness_in_adjusted_prices('/mnt/sda1/pysystemtrade/data/futures/adjusted_prices_csv', column_name = 'price')
 
     #for instrument_code in ['CAN-GOLD','TSE60']:
     #    mt_manual_check_spike_in_pst_for_instrument(instrument_code, column_list=['OPEN', 'HIGH', 'LOW', 'FINAL'], overwrite=True)

@@ -63,7 +63,8 @@ PST_OHLC_Spike_Clean_Up_Contracts_Remove_First_N_Lines = [
     #{'contract_filter': ('EU-DJ-OIL', '20170600', HOURLY_FREQ), 'lines_to_remove': 9},
     #{'contract_filter': ('EUR_micro', '20090600', HOURLY_FREQ), 'lines_to_remove': 1},
     #{'contract_filter': ('EURO600', '20161200', HOURLY_FREQ), 'lines_to_remove': 1},
-    #{'contract_filter': ('EUROSTX', '20011100', DAILY_PRICE_FREQ), 'lines_to_remove': 1}
+    #{'contract_filter': ('EUROSTX', '20011100', DAILY_PRICE_FREQ), 'lines_to_remove': 1},
+    #{'contract_filter': ('EU-DJ-OIL', '20170600', HOURLY_FREQ), 'lines_to_remove': 9}
     
 ]    
 
@@ -629,7 +630,7 @@ if __name__ == "__main__":
     contract_details = get_contract_details_from_mongo(contract)
     #print(contract_details)
 
-    dedup_all_pst_contract_prices()
+    #dedup_all_pst_contract_prices()
     #Step 1: 
     #remove_zero_volume_bars_all_contracts()
     #Step 2: 
@@ -643,5 +644,5 @@ if __name__ == "__main__":
 
     #Further Cleaning
     #Step 5: 
-    #cleanup_pst_parquets_by_rules()
+    cleanup_pst_parquets_by_rules()
 

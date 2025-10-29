@@ -201,7 +201,8 @@ if __name__ == "__main__":
     docs = list(testColl.find({'symbol': 'ES'}))
     print(len(docs))
     #remove some legacy fields that are no longer needed
-    fields_to_remove=['most_recent_contract_tag','min_multiplier_tag', 'priority_tag' ]
+    #fields_to_remove=['most_recent_contract_tag','min_multiplier_tag', 'priority_tag' ]
+    fields_to_remove=['ohlcv_error' ]
     for field_to_remove in fields_to_remove:
         testColl.update_many(
             {},

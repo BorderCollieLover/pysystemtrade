@@ -114,20 +114,32 @@ def add_multiple_prices_contracts_to_db():
             else:
                 add_multiple_prices_contracts_to_db_for_instrument(data, instrument_code)   
 
+def update_sampling_status_based_on_expiry_for_contracts(diag_contract: dataContracts, contract_objects_chain):
+    for contract in contract_objects_chain:
+        contract_to_check = diag_contract.get_contract_from_db(contract)
+        #if not contract_to_check.currently_sampling:
+        if not contract_to_check.expired():
+            diag_contract.mark_contract_as_sampling(contract_to_check)
+        else:
+            diag_contract.mark_contract_as_not_sampling(contract_to_check)
+
 def add_multiple_prices_contracts_to_db_for_instrument(data: dataBlob, instrument_code: str = ALL_INSTRUMENTS):
     diag_contract = dataContracts(data)
+    #contracts that are already in the DB
     contracts_in_db = diag_contract.get_all_contract_objects_for_instrument_code(instrument_code)
-    #print(contracts_in_db)
-    #print(len(contracts_in_db))
+
+    #add contracts that are not yet in the DB and update their sampling and expiries
     contract_date_chain = create_full_contract_date_chain_for_multiple_prices(data, instrument_code)
     contract_object_chain = create_contract_object_chain_from_contract_date_chain(instrument_code, contract_date_chain)
     new_contracts_to_add = [contract for contract in contract_object_chain if contract not in contracts_in_db]
     new_contracts_to_add = listOfFuturesContracts(new_contracts_to_add)
-    #print(new_contracts_to_add)
-    #print(len(new_contracts_to_add))
     update_contract_database_with_contract_chain(instrument_code, new_contracts_to_add, data)
     update_expiries_and_sampling_status_for_contracts(instrument_code, data, new_contracts_to_add)
     update_expiry_from_contract_price_data(diag_contract, new_contracts_to_add)
+
+    #update sampling for all contracts based on expiry
+    contracts_in_db = diag_contract.get_all_contract_objects_for_instrument_code(instrument_code)
+    update_sampling_status_based_on_expiry_for_contracts(diag_contract, contracts_in_db)
     return
 
 #Update expiry date in the production/futures_contracts database if there are historical contract prices 
@@ -139,18 +151,13 @@ def update_expiry_from_contract_price_data(diag_contract, contract_objects_chain
     parquet_price = parquetFuturesContractPriceData(parquet_access)
     for contract in contract_objects_chain:
         contract_to_check = diag_contract.get_contract_from_db(contract)
-        print(contract_to_check)
         if contract_to_check.expired():
-            print(contract_to_check.expiry_date)
-            print(contract_to_check.days_since_expiry())
             if parquet_price.has_merged_price_data_for_contract(contract_to_check):
                 contract_prices = parquet_price._get_merged_prices_for_contract_object_no_checking(contract)
                 price_data_last_dt = contract_prices.index[-1]
                 if price_data_last_dt > contract_to_check.expiry_date:
-                    print('wrong expiry ')
                     price_data_last_dt = pd.Timestamp(price_data_last_dt).to_pydatetime()
                     diag_contract.update_expiry_date(contract_to_check, expiryDate(price_data_last_dt.year, price_data_last_dt.month, price_data_last_dt.day)) #update the new expiry to database 
-                    print(contract_to_check.expiry_date)
 
 #This updates expiry for all instruments and all expired contract in the database, using the latest contract price date, if available and later than the expiry date in the database 
 def update_all_contract_expiry_dt_from_contract_price_data():
@@ -164,11 +171,6 @@ def update_all_contract_expiry_dt_from_contract_price_data():
         update_expiry_from_contract_price_data(diag_contract, contracts_in_db)
     return
 
-def update_expiries_and_sampling_status_for_multiple_prices_contracts(data: dataBlob, instrument_code: str):   
-    contract_date_chain = create_full_contract_date_chain_for_multiple_prices(data, instrument_code)
-    contract_object_chain = create_contract_object_chain_from_contract_date_chain(instrument_code, contract_date_chain)
-    update_expiries_and_sampling_status_for_contracts(instrument_code, data, contract_object_chain)
-    return
 
 def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrument_code: str = ALL_INSTRUMENTS):
     diag_prices = diagPrices(data)
@@ -213,12 +215,8 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
         #print(current_contract_date )
         contract_date_chain.append(current_contract_date)
 
-    #print('Chain before checking data existence:')
-    #print(contract_date_chain)
-
     #Now check if there are contract price data for are valid by checking if there are contract price data
     price_dts = diag_prices.contract_dates_with_price_data_for_instrument_code(instrument_code)
-    #print(sorted(price_dts))
     max_price_dt = max(price_dts)
     min_price_dt = min(price_dts)
     new_contract_date_chains = []
@@ -228,11 +226,8 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
         if str(contract_date) <= max_price_dt and str(contract_date) >= min_price_dt:
             #print( str(contract_date) + ' in price_dts')
             new_contract_date_chains.append(contract_date)
-    #add all 
+    #add all contracts with data to the contract chain as well 
     new_contract_date_chains = new_contract_date_chains + price_dts
-
-    #print('Chain after checking data existence:')
-    #print(new_contract_date_chains)
 
     return new_contract_date_chains
 
@@ -240,6 +235,7 @@ def create_full_contract_date_chain_for_multiple_prices(data: dataBlob, instrume
 def update1() : 
     FuturesInstrumentData = csvFuturesInstrumentData()
     instruments = FuturesInstrumentData.get_list_of_instruments()
+
     #add contracts to DB
     with dataBlob(log_name="Update-Sampled_Contracts") as data:
         for instrument in sorted(instruments):
@@ -249,32 +245,6 @@ def update1() :
                 print(e)
     #update all sampled contracts
     #update_historical_prices()
-
-def update2(): 
-    ############################################################
-    #### Might need to manually check for spikes in the data first
-    ############################################################
-    #update expiries and sampling status
-    config = Config()
-    config = get_production_config()
-    FuturesInstrumentData = csvFuturesInstrumentData()
-    instruments = FuturesInstrumentData.get_list_of_instruments()
-    with dataBlob(log_name="Update-Sampled_Contracts") as data:
-        for instrument in instruments:
-            try:
-                update_expiries_and_sampling_status_for_multiple_prices_contracts(data, instrument)
-            except Exception as e:
-                print(e)
-    #remove empty parquet files
-    path = config.get_element("parquet_store")+'/'+CONTRACT_COLLECTION+'/'
-    remove_empty_parquet(path)
-
-    #remove contracts that are far distant into the futures and are marked as not_sampling because IB doesn't have data for them yet
-    current_year_month = datetime.now().strftime("%Y%m")
-    remove_future_contracts_marked_as_not_sampling(current_year_month)
-    remove_futures_contracts_prior_to_197802()
-    #remove_futures_contracts_without_prices()
-
 
 
 if __name__ == "__main__":
@@ -287,8 +257,11 @@ if __name__ == "__main__":
         #print(contract_chain)
         #print(len(contract_chain))
         #add_multiple_prices_contracts_to_db_for_instrument(data, instrument_code)
+
+
     #This will add contracts that are not yet in the databases, e.g. new contracts coming online, or new historical contracts downloaded from other sources 
     update1()
+    #update_to_sample_for_unexpired_contracts_for_all_instruments()
 
     #This will update the expiry dates in the database, so they are not always point to the first day of the expiry month 
     #update_all_contract_expiry_dt_from_contract_price_data()

@@ -77,11 +77,11 @@ def add_PST_contract_info_to_IB_futures_contract_db():
         for contract_date in list_of_contracts:
             date_str = contract_date[:6]
             contract_object = futuresContract(instrument_code, date_str)
-            print(contract_object)
+            #print(contract_object)
             #print(str(contract_object)  )
-            print(contract_object.instrument)
-            print(contract_object.params )    
-            print(contract_object.expiry_date)
+            #print(contract_object.instrument)
+            #print(contract_object.params )    
+            #print(contract_object.expiry_date)
             #print(data.ib_conn)
             #broker_data_source.get_cleaned_prices_at_frequency_for_contract_object(contract_object, daily_freqency)
             #broker_futures_contract_price_data = ibFuturesContractPriceData(ibconnection=data.ib_conn, data=data)   

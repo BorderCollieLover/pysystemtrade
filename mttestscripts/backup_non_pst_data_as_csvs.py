@@ -39,8 +39,8 @@ def backup_all_data_parquet_into_csv_files(backup_root):
 
 if __name__ == "__main__":
     #ensure contract prices are deduped before backup -- hardly necessary but just in case
-    dedup_all_ib_parquets()
-    dedup_all_pst_contract_prices()
+    #dedup_all_ib_parquets()
+    #dedup_all_pst_contract_prices()
 
     config = Config()
     config = get_production_config()

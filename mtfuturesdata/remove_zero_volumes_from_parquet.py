@@ -8,7 +8,10 @@ from mttestscripts.files_tool import list_all_instruments_from_a_directory
 
 def remove_zero_volumes_from_one_parquet(input_parquet, output_parquet):
     df = pd.read_parquet(input_parquet)
+    df_len = len(df)
     df = remove_zero_volumes(df, 'volume')
+    if (df_len != len(df)):
+        print(f"Removed zero volume rows: {df_len - len(df)} from {input_parquet}")
     if (df is None) or df.empty:
         ...
     else:

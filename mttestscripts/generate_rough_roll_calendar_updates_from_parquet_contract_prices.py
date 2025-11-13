@@ -1,5 +1,4 @@
 import os
-#from turtle import pd
 import pandas as pd
 from sysinit.futures.rollcalendars_from_db_prices_to_csv import build_and_write_roll_calendar, check_saved_roll_calendar
 from sysdata.csv.csv_roll_calendars import csvRollCalendarData
@@ -132,6 +131,8 @@ def copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_
     config = get_production_config()
     #copy futures contract price parquets for the instrument to the temporary directory
     repo_roll_calendar_data = csvRollCalendarData()
+    print(repo_roll_calendar_data.get_list_of_instruments() )
+    print(repo_roll_calendar_data)
     for instrument in repo_roll_calendar_data.keys():
     #for instrument in ['LEAD_LME', 'TIN_LME', 'ZINC_LME']:
         print(instrument)
@@ -389,12 +390,16 @@ if __name__ == "__main__":
     else:
         processed_instruments = []
 
+    print(repo_roll_calendar_data.keys())
     #for instrument in ['MILK', 'MILKDRY', 'MILKWET']:
-    for instrument in repo_roll_calendar_data.keys():
+    #for instrument in ['BEL20', 'BUTTER', 'CHEESE', 'ETHANOL', 'GOLD-mini', 'HOUSE-US', 'MILK', 'MILKWET', 'MSCIEMASIA', 
+    #                   'NICKEL-LME', 'NIFTY', 'RUR', 'SGX', 'US-PROPERTY', 'US-FINANCE', 'US-TECH', 'WHEY'  ]:
+    for instrument in ['MILKWET']:
+    #for instrument in repo_roll_calendar_data.keys():
         #if instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini','VNKI', 'WHEY', 'ZINC_LME']:
         #    continue
-        if instrument in ['INR-micro', 'NICKEL_LME', 'NIFTY-IN', 'R1000_mini', 'MILK', 'MILKDRY', 'MILKWET']: #These are instruments with various data issues, skipping for now
-            continue
+        #if instrument in ['INR-micro', 'NICKEL_LME', 'NIFTY-IN', 'R1000_mini', 'MILK', 'MILKDRY', 'MILKWET']: #These are instruments with various data issues, skipping for now
+        #    continue
 
         if instrument in processed_instruments: 
             continue
@@ -402,7 +407,6 @@ if __name__ == "__main__":
         print(instrument)
         #1. Generate a roll calendar for the instrument using the tmp_parquet_futures_contract_price_data
         try:
-            ...
             build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
         except Exception as e: 
             print(e)
@@ -414,7 +418,6 @@ if __name__ == "__main__":
 
         #3. Generate multiple prices for the instrument using the generated roll calendar
         try:
-            ...
             process_multiple_prices_single_instrument(instrument, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)
             generate_spliced_multiple_prices(instrument, multiple_prices_from_db, spliced_multiple_prices)
             

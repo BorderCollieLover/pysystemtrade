@@ -9,6 +9,7 @@
 # 2.b If either hourly or daily data is changed, then recompile the mixed frequency data
 # 3. Update FX data -- might as well just get a clean time series before backtest
 import os
+from enum import Enum
 import pandas as pd
 from sysdata.data_blob import dataBlob
 from sysdata.config.production_config import get_production_config, Config
@@ -25,6 +26,8 @@ from syscore.dateutils import Frequency, DAILY_PRICE_FREQ, HOURLY_FREQ
 from mtfuturesdata.mtMongoClient import mtMongoClient
 from mttestscripts.ohlc_parquet_cleanup_tools import clean_up_ohlc
 
+
+Contract_Map_Status = Enum('Contract_Map_Status', 'MAP_SUCCESSFUL MAP_FAILED CONID_NOT_FOUND MULTIPLE_CONID_FOUND CONTRACT_KEY_ALREADY_MAPPED CONTRACT_KEY_ALREADY_MAPPED_DIFFERENT') 
 
 list_of_frequencies = [HOURLY_FREQ, DAILY_PRICE_FREQ]
 pst_ohlvc_columns = ["OPEN", "HIGH", "LOW", "FINAL", "VOLUME"]  # PST format columns
@@ -68,7 +71,26 @@ PST_OHLC_Spike_Clean_Up_Contracts_Remove_First_N_Lines = [
     
 ]    
 
+Instrument_to_IB_Futures_Contract_Ticker_Mapping = [
+    {'instrument': 'BEL20', 'contract_ticker_format': 'BXF[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'BUTTER', 'contract_ticker_format': 'CB[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'CHEESE', 'contract_ticker_format': 'CSC[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'HOUSE-US', 'contract_ticker_format': 'CUS[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'MILK', 'contract_ticker_format': 'DC[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'MILKWET', 'contract_ticker_format': 'GDK[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'MSCIEMASIA', 'contract_ticker_format': 'ASN[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'NIFTY', 'contract_ticker_format': 'NIFTY[FGHJKMNQUVXZ]2[0-9]_*', 'year_length': 2, 'month_length': 1},
+    {'instrument': 'SGX', 'contract_ticker_format': 'ST[FGHJKMNQUVXZ]2[0-9]_*', 'year_length': 2, 'month_length': 1},
+    {'instrument': 'US-PROPERTY', 'contract_ticker_format': 'XAR[HMUZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'US-FINANCE', 'contract_ticker_format': 'XAF[HMUZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'US-TECH', 'contract_ticker_format': 'XAK[HMUZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'WHEY', 'contract_ticker_format': 'DY[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+]
 
+Contract_to_IB_Futures_Contract_Ticker_Mapping = [
+
+
+]
 
 
 #ensure that a time series dataframe has unique and monotonically increasing index 
@@ -614,20 +636,104 @@ def cleanup_pst_parquets_by_rules():
     
     return
 
+def manually_map_pst_contract_to_ib(pst_contract, ib_conId):
+    #input: a pst contract key (instrument_code/contract_date, e.g. SP500/20250900) and a corresponding ib conId
+    #output: result status: map successful, contract_key already exists, or contract_key exists but different
+
+    config = Config()
+    config = get_production_config()
+    mongo_client = mtMongoClient() 
+    mongo_client._set_db(config.get_element('legacy_ib_data_db'))
+    contracts_collection_name = config.get_element('legacy_futures_contracts_collection')
+
+    doc_filter = {'_id': ib_conId}
+    docs = list(mongo_client._generic_read_docs(contracts_collection_name, doc_filter))
+    if len(docs)<1:
+        print(f"No IB contract details found in MongoDB for conId {ib_conId}, cannot proceed")
+        return Contract_Map_Status.CONID_NOT_FOUND
+    elif len(docs)>1:
+        print(f"Multiple IB contract details found in MongoDB for conId {ib_conId}, cannot proceed")
+        return Contract_Map_Status.MULTIPLE_CONID_FOUND
+    contract_details = docs[0]
+
+    if ('pst_contract_key' in contract_details):
+        existing_pst_contract_key = contract_details['pst_contract_key']
+        if existing_pst_contract_key == str(pst_contract):
+            print(f"PST contract key {pst_contract} already mapped to IB conId {ib_conId}")
+            return Contract_Map_Status.CONTRACT_KEY_ALREADY_MAPPED
+        else:
+            print(f"IB conId {ib_conId} already mapped to different PST contract key {existing_pst_contract_key}, cannot proceed")
+            return Contract_Map_Status.CONTRACT_KEY_ALREADY_MAPPED_DIFFERENT
+    else:
+        #proceed to map the pst contract key to ib conId
+        update_doc = {'$set': {'pst_contract_key': str(pst_contract)}}
+        update_result = mongo_client._generic_update_one(contracts_collection_name, {'_id': ib_conId}, update_doc)
+        if update_result:
+            print(f"Successfully mapped PST contract key {pst_contract} to IB conId {ib_conId}")
+            return Contract_Map_Status.MAP_SUCCESSFUL
+        else:
+            print(f"Failed to map PST contract key {pst_contract} to IB conId {ib_conId}")
+            return Contract_Map_Status.MAP_FAILED
+        
 
 
+def enhance_pst_data_with_ib_data_manual_contract_mapping():
+    #Manual mapping of PST contract to IB conId for contracts that cannot be mapped automatically
+    manual_pst_to_ib_contract_mapping = {
+        'NIFTY_20230900': 409920763,
+        'NIFTY_20231200': 410263763,
+        'NIFTY_20240300': 410606763,
+        'NIFTY_20240600': 410949763,
+        'NIFTY_20240900': 411292763,
+        'NIFTY_20241200': 411635763,
+        'NIFTY_20250300': 411978763,
+        'NIFTY_20250600': 412321763,
+        'NIFTY_20250900': 412664763,
+        'NIFTY_20251200': 413007763,
+        'NIFTY_20260300': 413350763,
+        'NIFTY_20260600': 413693763,
+        'NIFTY_20260900': 414036763,
+        'NIFTY_20261200': 414379763,
+    }
+    for pst_contract_key, ib_conId in manual_pst_to_ib_contract_mapping.items():
+        instrument_code, contract_date = pst_contract_key.rsplit('_', 1)
+        contract = futuresContract(instrument_code, contract_date)
 
+        #Get IB contract details from conId
+        config = Config()
+        config = get_production_config()
+        mongo_client = mtMongoClient() 
+        mongo_client._set_db(config.get_element('legacy_ib_data_db'))
+        contracts_collection_name = config.get_element('legacy_futures_contracts_collection')
 
+        doc_filter = {'_id': ib_conId}
+        docs = list(mongo_client._generic_read_docs(contracts_collection_name, doc_filter))
+        if len(docs)<1:
+            print(f"No IB contract details found in MongoDB for conId {ib_conId}, cannot proceed")
+            continue
+        elif len(docs)>1:
+            print(f"Multiple IB contract details found in MongoDB for conId {ib_conId}, cannot proceed")
+            continue
+        contract_details = docs[0]
+
+        #Enhance PST data with IB data for this contract
+        enhance_pst_data_with_ib_data_for_contract(contract)
                         
 
 
 
 if __name__ == "__main__":
     instrument_code = 'SP500'
-    date_str = '20250900'
+    date_str = '20241200'
     contract = futuresContract(instrument_code, date_str)
     #remove_zero_volume_bars(contract)
     contract_details = get_contract_details_from_mongo(contract)
+    print(contract_details)
+
+    contract=futuresContract('SP500', '20250900')
+    print('here')
+    map_result = manually_map_pst_contract_to_ib(contract, 495512557)
+    print(f"Mapping result: {map_result}")
     #print(contract_details)
 
     #dedup_all_pst_contract_prices()
@@ -644,5 +750,5 @@ if __name__ == "__main__":
 
     #Further Cleaning
     #Step 5: 
-    cleanup_pst_parquets_by_rules()
+    #cleanup_pst_parquets_by_rules()
 

@@ -394,7 +394,7 @@ if __name__ == "__main__":
     #for instrument in ['MILK', 'MILKDRY', 'MILKWET']:
     #for instrument in ['BEL20', 'BUTTER', 'CHEESE', 'ETHANOL', 'GOLD-mini', 'HOUSE-US', 'MILK', 'MILKWET', 'MSCIEMASIA', 
     #                   'NICKEL-LME', 'NIFTY', 'RUR', 'SGX', 'US-PROPERTY', 'US-FINANCE', 'US-TECH', 'WHEY'  ]:
-    for instrument in ['MILKWET']:
+    for instrument in ['NIFTY']:
     #for instrument in repo_roll_calendar_data.keys():
         #if instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini','VNKI', 'WHEY', 'ZINC_LME']:
         #    continue

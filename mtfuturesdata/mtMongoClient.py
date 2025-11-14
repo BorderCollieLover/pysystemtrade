@@ -125,16 +125,17 @@ class mtMongoClient():
         if doc_counts <1:
             if not upsert:
                 print("Not found. Skip")
-                return
+                return False
         
         if doc_counts > 1 : 
             print("There are {} documents for filter {}, consider update_many.".doc_counts.doc_identifier)
-            return
+            return False
         try:
             self.mongo_db[coll_name].update_one(filter=doc_identifier, update=update_instruction, upsert=upsert )
         except Exception as e: 
             print(e)
-        return
+            return False
+        return True
             
     def _generic_update_many(self, coll_name, doc_identifier={}, update_instruction={}, upsert=False):
         self._generic_ensure_coll(coll_name)

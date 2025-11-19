@@ -9,6 +9,7 @@
 # 2.b If either hourly or daily data is changed, then recompile the mixed frequency data
 # 3. Update FX data -- might as well just get a clean time series before backtest
 import os
+import re
 from enum import Enum
 import pandas as pd
 from sysdata.data_blob import dataBlob
@@ -22,7 +23,7 @@ from sysproduction.update_historical_prices import write_merged_prices_for_contr
 from sysproduction.data.prices import diagPrices
 from sysobjects.contracts import futuresContract
 from sysobjects.futures_per_contract_prices import futuresContractPrices
-from syscore.dateutils import Frequency, DAILY_PRICE_FREQ, HOURLY_FREQ
+from syscore.dateutils import Frequency, DAILY_PRICE_FREQ, HOURLY_FREQ, month_from_contract_letter, contract_month_from_number
 from mtfuturesdata.mtMongoClient import mtMongoClient
 from mttestscripts.ohlc_parquet_cleanup_tools import clean_up_ohlc
 
@@ -675,49 +676,93 @@ def manually_map_pst_contract_to_ib(pst_contract, ib_conId):
             print(f"Failed to map PST contract key {pst_contract} to IB conId {ib_conId}")
             return Contract_Map_Status.MAP_FAILED
         
+def contract_year_from_year_code(year_code):
+    #convert year code to year number
+    if year_code < 50:
+        contract_year = 2000 + year_code
+    else:
+        contract_year = 1900 + year_code
+    return contract_year
+
+def manually_map_pst_contract_to_ib_by_instrument(instrument_code, contract_ticker_format, year_length, month_length):
+    #map all existing IB contract prices parquet to PST contracts for a given instrument
+    #input: instrument_code, contract_ticker_format, year_length, month_length
+    #output: a list of successfully mapped contracts, excluding those already mapped in the database
+    
+    #find all ib contract price parquet files for the given filter 
+    #for each file: 
+    #   parse the year and month code, as well as the IB conId from the file name
+    #   create a mapping 
+    #   map the pst contract to ib 
+    #   if mapping successful, add the contract to the output list 
+    mapped_contract = []
+    config = Config()
+    config = get_production_config()
+    parquet_home = config.get_element("parquet_ib_store")
+    daily_ohlc_folder = os.path.join(parquet_home, 'RTH_1_day')
+    ib_parquet_files = [f for f in os.listdir(daily_ohlc_folder) if re.match(contract_ticker_format, f)]
+
+    print(ib_parquet_files)
+    for ib_parquet_file in ib_parquet_files:
+        #parse the year and month code from the file name
+        if month_length ==1 : 
+            match = re.match(r'.*([FGHJKMNQUVXZ])([0-9]{'+str(year_length)+'})_([0-9]+)\.parquet', ib_parquet_file)
+            if not match:
+                print(f"Failed to parse year and month code from IB parquet file name {ib_parquet_file}, skip")
+                continue
+            month_code = match.group(1)
+            year_code = int(match.group(2))
+            ib_conId = int(match.group(3))  
+
+            print(f"Parsed month code {month_code}, year code {year_code}, conId {ib_conId} from IB parquet file name {ib_parquet_file}"
+                )
+
+        #convert month code to month number
+        month_number = month_from_contract_letter(month_code)
+        if month_number is None:
+            print(f"Invalid month code {month_code} in IB parquet file name {ib_parquet_file}, skip")
+            continue
+
+        #convert year code to year number
+        contract_year = contract_year_from_year_code(year_code)
+        
+        #create contract date string
+        contract_date_str = f"{contract_year:04d}{month_number:02d}00"
+
+        #parse the conId from the file name
+        conId_match = re.match(r'.*_(\d+)\.parquet', ib_parquet_file)
+        if not conId_match:
+            print(f"Failed to parse conId from IB parquet file name {ib_parquet_file}, skip")
+            continue    
+        ib_conId = int(conId_match.group(1))
+
+        #create pst contract object
+        pst_contract = futuresContract(instrument_code, contract_date_str)
+
+        #map the pst contract to ib conId
+        #map_result = manually_map_pst_contract_to_ib(pst_contract, ib_conId)
+        #if map_result == Contract_Map_Status.MAP_SUCCESSFUL:
+        #    mapped_contract.append(str(pst_contract))
+
+    return(mapped_contract)
+
+
 
 
 def enhance_pst_data_with_ib_data_manual_contract_mapping():
-    #Manual mapping of PST contract to IB conId for contracts that cannot be mapped automatically
-    manual_pst_to_ib_contract_mapping = {
-        'NIFTY_20230900': 409920763,
-        'NIFTY_20231200': 410263763,
-        'NIFTY_20240300': 410606763,
-        'NIFTY_20240600': 410949763,
-        'NIFTY_20240900': 411292763,
-        'NIFTY_20241200': 411635763,
-        'NIFTY_20250300': 411978763,
-        'NIFTY_20250600': 412321763,
-        'NIFTY_20250900': 412664763,
-        'NIFTY_20251200': 413007763,
-        'NIFTY_20260300': 413350763,
-        'NIFTY_20260600': 413693763,
-        'NIFTY_20260900': 414036763,
-        'NIFTY_20261200': 414379763,
-    }
-    for pst_contract_key, ib_conId in manual_pst_to_ib_contract_mapping.items():
-        instrument_code, contract_date = pst_contract_key.rsplit('_', 1)
-        contract = futuresContract(instrument_code, contract_date)
-
-        #Get IB contract details from conId
-        config = Config()
-        config = get_production_config()
-        mongo_client = mtMongoClient() 
-        mongo_client._set_db(config.get_element('legacy_ib_data_db'))
-        contracts_collection_name = config.get_element('legacy_futures_contracts_collection')
-
-        doc_filter = {'_id': ib_conId}
-        docs = list(mongo_client._generic_read_docs(contracts_collection_name, doc_filter))
-        if len(docs)<1:
-            print(f"No IB contract details found in MongoDB for conId {ib_conId}, cannot proceed")
-            continue
-        elif len(docs)>1:
-            print(f"Multiple IB contract details found in MongoDB for conId {ib_conId}, cannot proceed")
-            continue
-        contract_details = docs[0]
-
+    
+    for instrument_mapping in Instrument_to_IB_Futures_Contract_Ticker_Mapping:
+        instrument_code = instrument_mapping['instrument']
+        contract_ticker_format = instrument_mapping['contract_ticker_format']
+        year_length = instrument_mapping['year_length']
+        month_length = instrument_mapping['month_length']
+        print(f"Processing instrument {instrument_code} with contract ticker format {contract_ticker_format}")
+        mapped_contracts = manually_map_pst_contract_to_ib_by_instrument(instrument_code, contract_ticker_format, year_length, month_length)
+        print(f"Mapped {len(mapped_contracts)} contracts for instrument {instrument_code}")
+        manually_map_pst_contract_to_ib_by_instrument(instrument_code, contract_ticker_format, year_length, month_length)
+        
         #Enhance PST data with IB data for this contract
-        enhance_pst_data_with_ib_data_for_contract(contract)
+        #enhance_pst_data_with_ib_data_for_contract(contract)
                         
 
 
@@ -735,6 +780,8 @@ if __name__ == "__main__":
     map_result = manually_map_pst_contract_to_ib(contract, 495512557)
     print(f"Mapping result: {map_result}")
     #print(contract_details)
+
+    enhance_pst_data_with_ib_data_manual_contract_mapping()
 
     #dedup_all_pst_contract_prices()
     #Step 1: 

@@ -404,17 +404,16 @@ if __name__ == "__main__":
 
         print(instrument)
         #1. Generate a roll calendar for the instrument using the tmp_parquet_futures_contract_price_data
-        #try:
-        #    build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
-        #except Exception as e: 
-        #    print(e)
+        try:
+            build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
+        except Exception as e: 
+            print(e)
 
         #2. Resolve the first roll in the generated roll calendar by comparing it to the last roll in the system roll calendar
         #   Patch up the system roll calendar with the correct generated roll calendar 
         #   Update the generated roll calendar with the 'real' last roll from the system roll calendar to ensure that the multiple prices generated from the roll calendar are correct without gaps
-        #correct_generated_roll_calendars(instrument, system_roll_calendar_path, roll_calendars_from_db,patched_roll_calendars)
-        #break
-
+        correct_generated_roll_calendars(instrument, system_roll_calendar_path, roll_calendars_from_db,patched_roll_calendars)
+        
         #3. Generate multiple prices for the instrument using the generated roll calendar
         try:
             process_multiple_prices_single_instrument(instrument, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)

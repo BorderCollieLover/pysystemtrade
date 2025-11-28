@@ -35,6 +35,8 @@ if __name__ == "__main__":
     instrument_list = db_multiple_prices.get_list_of_instruments()
 
     for instrument_code in instrument_list:
+    #for instrument_code in ['BEL20', 'BUTTER', 'CHEESE', 'ETHANOL', 'GOLD-mini', 'HOUSE-US', 'MILK', 'MILKWET', 'MSCIEMASIA', 'NICKEL_LME', 'NIFTY', 'RUR', 'SGX', 'US-PROPERTY', 'US-FINANCE', 'US-TECH', 'WHEY'  ]:
+    #for instrument_code in ['BUTTER']:
         print(instrument_code)
         multiple_prices = db_multiple_prices.get_multiple_prices(instrument_code)
 

@@ -391,10 +391,8 @@ if __name__ == "__main__":
         processed_instruments = []
 
     print(repo_roll_calendar_data.keys())
-    #for instrument in ['MILK', 'MILKDRY', 'MILKWET']:
-    #for instrument in ['BEL20', 'BUTTER', 'CHEESE', 'ETHANOL', 'GOLD-mini', 'HOUSE-US', 'MILK', 'MILKWET', 'MSCIEMASIA', 
-    #                   'NICKEL-LME', 'NIFTY', 'RUR', 'SGX', 'US-PROPERTY', 'US-FINANCE', 'US-TECH', 'WHEY'  ]:
-    for instrument in ['NIFTY']:
+    #for instrument in ['BEL20', 'BUTTER', 'CHEESE', 'ETHANOL', 'GOLD-mini', 'HOUSE-US', 'MILK', 'MILKWET', 'MSCIEMASIA', 'NICKEL-LME', 'NIFTY', 'RUR', 'SGX', 'US-PROPERTY', 'US-FINANCE', 'US-TECH', 'WHEY'  ]:
+    for instrument in ['MSCIEMASIA']:
     #for instrument in repo_roll_calendar_data.keys():
         #if instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini','VNKI', 'WHEY', 'ZINC_LME']:
         #    continue
@@ -406,15 +404,16 @@ if __name__ == "__main__":
 
         print(instrument)
         #1. Generate a roll calendar for the instrument using the tmp_parquet_futures_contract_price_data
-        try:
-            build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
-        except Exception as e: 
-            print(e)
+        #try:
+        #    build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
+        #except Exception as e: 
+        #    print(e)
 
         #2. Resolve the first roll in the generated roll calendar by comparing it to the last roll in the system roll calendar
         #   Patch up the system roll calendar with the correct generated roll calendar 
         #   Update the generated roll calendar with the 'real' last roll from the system roll calendar to ensure that the multiple prices generated from the roll calendar are correct without gaps
-        correct_generated_roll_calendars(instrument, system_roll_calendar_path, roll_calendars_from_db,patched_roll_calendars)
+        #correct_generated_roll_calendars(instrument, system_roll_calendar_path, roll_calendars_from_db,patched_roll_calendars)
+        #break
 
         #3. Generate multiple prices for the instrument using the generated roll calendar
         try:

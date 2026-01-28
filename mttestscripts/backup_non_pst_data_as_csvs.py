@@ -13,7 +13,7 @@ def backup_all_data_parquet_into_csv_files(backup_root):
     print(backup_root)
     #ignore spot fx, because it involves setting the index name, leave it to PST's own backup process 
     #also ignore other PST data which is back up in PST's own process 
-    source_folders = ['ib', 'futures_contract_prices'] 
+    source_folders = ['ib', 'futures_contract_prices', 'futures_multiple_prices'] 
     for folder in source_folders: 
         
         source_files_path = os.path.join(config.get_element("parquet_store"), folder)

@@ -25,7 +25,7 @@ from sysobjects.contracts import futuresContract
 from sysobjects.futures_per_contract_prices import futuresContractPrices
 from syscore.dateutils import Frequency, DAILY_PRICE_FREQ, HOURLY_FREQ, month_from_contract_letter, contract_month_from_number
 from mtfuturesdata.mtMongoClient import mtMongoClient
-from mttestscripts.ohlc_parquet_cleanup_tools import clean_up_ohlc
+from mttestscripts.parquet.ohlc_parquet_cleanup_tools import clean_up_ohlc
 
 
 Contract_Map_Status = Enum('Contract_Map_Status', 'MAP_SUCCESSFUL MAP_FAILED CONID_NOT_FOUND MULTIPLE_CONID_FOUND CONTRACT_KEY_ALREADY_MAPPED CONTRACT_KEY_ALREADY_MAPPED_DIFFERENT') 
@@ -80,7 +80,7 @@ Instrument_to_IB_Futures_Contract_Ticker_Mapping = [
     {'instrument': 'MILK', 'contract_ticker_format': 'DC[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     {'instrument': 'MILKWET', 'contract_ticker_format': 'GDK[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     {'instrument': 'MSCIEMASIA', 'contract_ticker_format': 'ASN[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
-    {'instrument': 'NIFTY', 'contract_ticker_format': 'NIFTY[FGHJKMNQUVXZ]2[0-9]_*', 'year_length': 2, 'month_length': 1},
+    #{'instrument': 'NIFTY', 'contract_ticker_format': 'NIFTY[FGHJKMNQUVXZ]2[0-9]_*', 'year_length': 2, 'month_length': 1},
     {'instrument': 'SGX', 'contract_ticker_format': 'ST[FGHJKMNQUVXZ]2[0-9]_*', 'year_length': 2, 'month_length': 1},
     {'instrument': 'US-PROPERTY', 'contract_ticker_format': 'XAR[HMUZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     {'instrument': 'US-FINANCE', 'contract_ticker_format': 'XAF[HMUZ][0-9]_*', 'year_length': 1, 'month_length': 1},
@@ -785,24 +785,12 @@ if __name__ == "__main__":
     contract_details = get_contract_details_from_mongo(contract)
     print(contract_details)
 
-    contract=futuresContract('SP500', '20250900')
-    print('here')
-    map_result = manually_map_pst_contract_to_ib(contract, 495512557)
-    print(f"Mapping result: {map_result}")
-    #print(contract_details)
-
+    #contract=futuresContract('SP500', '20250900')
+    #map_result = manually_map_pst_contract_to_ib(contract, 495512557)
+    #print(f"Mapping result: {map_result}")
+    
     enhance_pst_data_with_ib_data_manual_contract_mapping()
 
-    #dedup_all_pst_contract_prices()
-    #Step 1: 
-    #remove_zero_volume_bars_all_contracts()
-    #Step 2: 
-    #dedup_all_pst_contract_prices()
-    #Step 3: 
-    #check_all_pst_contract_parquet_and_ib_parquet_data_consistency()
-    #Step 4: 
-    #enhance_pst_dat_with_ib_data()
-    #enhance_pst_data_with_ib_data_for_contract(contract)
     
 
     #Further Cleaning

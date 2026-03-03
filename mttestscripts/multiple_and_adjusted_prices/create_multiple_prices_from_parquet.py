@@ -1,0 +1,36 @@
+import os
+from sysdata.parquet.parquet_futures_per_contract_prices import CONTRACT_COLLECTION
+from sysdata.config.production_config import get_production_config, Config
+
+from sysdata.csv.csv_multiple_prices import csvFuturesMultiplePricesData
+from sysdata.parquet.parquet_multiple_prices import parquetFuturesMultiplePricesData
+from sysinit.futures.rollcalendars_from_db_prices_to_csv import build_and_write_roll_calendar, check_saved_roll_calendar
+from sysinit.futures.multipleprices_from_db_prices_and_csv_calendars_to_db import process_multiple_prices_single_instrument
+from sysobjects.multiple_prices import futuresMultiplePrices
+from sysobjects.roll_calendars import rollCalendar
+from sysdata.csv.csv_roll_calendars import csvRollCalendarData
+from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData
+from sysdata.parquet.parquet_access import ParquetAccess
+from sysproduction.data.prices import diagPrices
+from mttestscripts.files_tool import list_all_instruments_from_a_directory, backup_one_folder
+from mttestscripts.roll_calendars.remove_spurious_roll import remove_spurious_roll_from_roll_calendar_data
+
+config = Config()
+config = get_production_config()
+tmp_futures_contract_price_parquets = os.path.join(config.get_element("parquet_store")+'/'+'tmp_futures_contract_price_parquets')
+tmp_futures_contract_price_parquets_contract_collection = tmp_futures_contract_price_parquets + '/' + CONTRACT_COLLECTION
+roll_calendars_from_db = os.path.join('data', 'futures', 'roll_calendars_from_db')
+multiple_prices_from_db = os.path.join('data', 'futures', 'multiple_from_db')
+
+
+instrument_code = 'NICKEL_LME'
+
+tmp_futures_contract_parquet_access = ParquetAccess(tmp_futures_contract_price_parquets)
+tmp_parquet_futures_contract_price_data = parquetFuturesContractPriceData(tmp_futures_contract_parquet_access)
+generated_roll_calendar = build_and_write_roll_calendar(instrument_code,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
+
+generated_roll_calendar = remove_spurious_roll_from_roll_calendar_data(generated_roll_calendar)
+csv_roll_calendars_from_db = csvRollCalendarData(roll_calendars_from_db)
+csv_roll_calendars_from_db.add_roll_calendar(instrument_code, generated_roll_calendar, ignore_duplication=True)
+
+generated_multiple_prices = process_multiple_prices_single_instrument(instrument_code, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)

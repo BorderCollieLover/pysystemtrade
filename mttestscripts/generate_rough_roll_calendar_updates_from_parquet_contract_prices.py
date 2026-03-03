@@ -1,81 +1,22 @@
 import os
 import pandas as pd
+from glob import glob 
+import pickle 
+from mttestscripts.roll_calendars.remove_spurious_roll import remove_spurious_roll_from_roll_calendar_data
+from sysdata.csv.csv_multiple_prices import csvFuturesMultiplePricesData
+from sysdata.parquet.parquet_multiple_prices import parquetFuturesMultiplePricesData
 from sysinit.futures.rollcalendars_from_db_prices_to_csv import build_and_write_roll_calendar, check_saved_roll_calendar
+from sysinit.futures.multipleprices_from_db_prices_and_csv_calendars_to_db import process_multiple_prices_single_instrument
+from sysobjects.multiple_prices import futuresMultiplePrices
+from sysobjects.roll_calendars import rollCalendar
 from sysdata.csv.csv_roll_calendars import csvRollCalendarData
 from sysdata.parquet.parquet_futures_per_contract_prices import CONTRACT_COLLECTION
 from sysdata.config.production_config import get_production_config, Config
-from glob import glob 
 from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData
 from sysdata.parquet.parquet_access import ParquetAccess
 from sysproduction.data.prices import diagPrices
-from sysinit.futures.multipleprices_from_db_prices_and_csv_calendars_to_db import process_multiple_prices_single_instrument
 from mttestscripts.files_tool import list_all_instruments_from_a_directory, backup_one_folder
-import pickle 
-
-
-
-def create_tmp_directories_for_update_roll_calendars():
-    roll_calendars_from_db = os.path.join('data', 'futures', 'roll_calendars_from_db')
-    if not os.path.exists(roll_calendars_from_db):
-        os.makedirs(roll_calendars_from_db)
-    
-    multiple_prices_from_db = os.path.join('data', 'futures', 'multiple_from_db')
-    if not os.path.exists(multiple_prices_from_db):
-        os.makedirs(multiple_prices_from_db)
-    
-    spliced_multiple_prices = os.path.join('data', 'futures', 'multiple_prices_csv_spliced')
-    if not os.path.exists(spliced_multiple_prices):
-        os.makedirs(spliced_multiple_prices)
-    
-    patched_roll_calendars = os.path.join('data', 'futures', 'patched_roll_calendars')
-    if not os.path.exists(patched_roll_calendars):
-        os.makedirs(patched_roll_calendars)
-    return(roll_calendars_from_db, multiple_prices_from_db, spliced_multiple_prices, patched_roll_calendars)
-
-def prepare_adjust_prices_csv_for_update():
-    #This function is used to prepare the adjusted prices csv files for updating
-    #The main purpose is to ensure that the adjusted prices and multiple prices are in sync with each other
-
-
-    multiple_prices_csv = os.path.join('data', 'futures', 'multiple_prices_csv')
-    adjusted_prices_csv = os.path.join('data', 'futures', 'adjusted_prices_csv')
-
-    assert os.path.exists(multiple_prices_csv), "The multiple prices CSV directory does not exist."
-    assert os.path.exists(adjusted_prices_csv), "The adjusted prices CSV directory does not exist."
-
-    instruments = list_all_instruments_from_a_directory(adjusted_prices_csv, extension='.csv')
-    if not instruments: 
-        print("No instruments found in the adjusted prices CSV directory.")
-        return
-    
-    for instrument in instruments:
-        multiple_prices_file = os.path.join(multiple_prices_csv, instrument)
-        if not os.path.exists(multiple_prices_file):
-            print(f"Multiple prices CSV for {instrument} does not exist. Skipping.")
-            continue
-
-        adjusted_prices_file = os.path.join(adjusted_prices_csv, instrument)
-
-        multiple_prices = pd.read_csv(multiple_prices_file, index_col=0, parse_dates=True)
-        adjusted_prices = pd.read_csv(adjusted_prices_file, index_col=0, parse_dates=True)
-
-        last_adjusted_date = adjusted_prices.index[-1] if not adjusted_prices.empty else None
-        last_multiple_date = multiple_prices.index[-1] if not multiple_prices.empty else None
-        if last_adjusted_date is None or last_multiple_date is None:
-            print(f"One of the files for {instrument} is empty. Skipping.")
-            continue
-
-        if last_adjusted_date < last_multiple_date:
-            # If the last adjusted date is earlier than the last multiple prices date, we need to adjust the prices CSV
-            print(f"Adjusting prices for {instrument}. Last adjusted date: {last_adjusted_date}, Last multiple prices date: {last_multiple_date}")
-        else: 
-            if last_adjusted_date > last_multiple_date:
-            # If the last adjusted date is later than the last multiple prices date, we need to adjust the multiple prices CSV
-                print(f"Adjusting multiple prices for {instrument}. Last adjusted date: {last_adjusted_date}, Last multiple prices date: {last_multiple_date}")
-        
-        
-
-    return
+from mttestscripts.roll_calendars.remove_spurious_roll import remove_spurious_roll_from_roll_calendar_data
 
 def backup_repo_data():
     repo_paths = ['roll_calendars_csv', 'multiple_prices_csv', 'adjusted_prices_csv', 'fx_prices_csv']
@@ -115,16 +56,6 @@ def backup_repo_data():
 # The top level is passed on as an initialization parameter to a parquetAccess object, which in turn is used to initialize the parquetFuturesContractPriceData, 
 #  which is passed on the build_and_write_roll_calendar function as the input_prices parameter.
 # The relevant price parquet objects are copied to the CONTRACT_COLLECTION subfolder. This is just how PST code is setup. See notes on this topic :https://www.notion.so/Update-Roll-Calendars-17e39604e82e8077a4cacb64db102ae4
-def prepare_tmp_futures_contract_parquets_folder_for_updating_roll_calendars():
-    config = Config()
-    config = get_production_config()
-    tmp_futures_contract_price_parquets = os.path.join(config.get_element("parquet_store")+'/'+'tmp_futures_contract_price_parquets')
-    if not os.path.exists(tmp_futures_contract_price_parquets):
-        os.makedirs(tmp_futures_contract_price_parquets) 
-    tmp_futures_contract_price_parquets_contract_collection = tmp_futures_contract_price_parquets + '/' + CONTRACT_COLLECTION
-    if not os.path.exists(tmp_futures_contract_price_parquets_contract_collection):
-        os.makedirs(tmp_futures_contract_price_parquets_contract_collection) 
-    return tmp_futures_contract_price_parquets, tmp_futures_contract_price_parquets_contract_collection
 
 def copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_price_parquets_contract_collection):
     config = Config()
@@ -144,9 +75,12 @@ def copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_
 #From the PST system futures contract prices repository (parquet_store  + CONTRACT_COLLECTION)
 #Find all merged price parquet objects of this instrument, copy contracts that are no older than the reference contract to the temporary folder created above
 #However, since the roll calendar's last line is usually a spurious entry, we actually go back one more line in the roll calendar
+#We copy the data to a temp folder and build the roll calendars as we only want to generate roll calendars for the recent time periods to update the existing repo multiple prices
 def copy_futures_contract_price_parquets_for_roll_calendar_for_instrument(instrument, config, repo_roll_calendar_data,tmp_futures_contract_price_parquets_contract_collection):
     repo_roll_calendar = repo_roll_calendar_data.get_roll_calendar(instrument)
     #end_date = repo_roll_calendar.index.max()
+    #This is assuming that the roll calendar does not contain a spurious roll, e.g. backed out from multiple prices
+    #Need to go back one more line so as to generate enough roll calendar entries to "overlap" with the end of the existing multiple prices
     if len(repo_roll_calendar.index) > 1:
         last_roll_index = -2
     else: 
@@ -168,28 +102,6 @@ def copy_futures_contract_price_parquets_for_roll_calendar_for_instrument(instru
     for file in contract_files_to_copy:
         os.system('cp '+file+' '+tmp_futures_contract_price_parquets_contract_collection)
 
-#This is a test function to check the parquet_futures_contract_price_data object and the data it contains
-#This code is not used in the actual script
-def test_parquet_futures_code():
-    instrument_code = 'GAS_US_mini'
-    #PST's default behavior is to start with the default parquet_future_contract_price_data object and the code below is just for checking and comparison
-    #parquet_futures_contract_price_data, prices, dict_of_all_futures_contract_prices, dict_of_futures_contract_prices are based on the PST system folders where ALL historical futures contract prices are stored
-    #They are not used in this script. 
-    diag_prices = diagPrices()
-    parquet_futures_contract_price_data = diag_prices.db_futures_contract_price_data
-    prices = parquet_futures_contract_price_data 
-    #The name of merged_prices_for_instrument is misleading. In the actual call to the parquet object to read files from the folder, a data_type parameter doubled as the subfolder name is passed to the function.
-    #In the case of building roll calendars from futures contract prices, the data_type is CONTRACT_COLLECTION, which points to the futures_contract_prices subfolder in the parquet store
-    #Retrieve a dictionary of OHLCV data for each contract, where the key of the dictionary is the contract ID, which is the expiry
-    dict_of_all_futures_contract_prices = prices.get_merged_prices_for_instrument(instrument_code) 
-    #print(dict_of_all_futures_contract_prices)
-    #for key in dict_of_all_futures_contract_prices.keys():
-    #    print(key, dict_of_all_futures_contract_prices[key])
-    #Returns the final prices, or Close prices, C of the OHLCV data for each contract, again with the contract ID as the key in a dictionary format
-    dict_of_futures_contract_prices = dict_of_all_futures_contract_prices.final_prices()
-    #print(dict_of_all_futures_contract_prices)
-    #for key in dict_of_futures_contract_prices.keys():
-    #    print(key, dict_of_futures_contract_prices[key])
 
 def correct_generated_roll_calendars(instrument_code, system_roll_calendars_path, generated_roll_calendars_path, patched_roll_calendars_path):
     # Run this function after generating a temporary roll calendar and before generating the temporary multiple prices. 
@@ -199,7 +111,7 @@ def correct_generated_roll_calendars(instrument_code, system_roll_calendars_path
     #   1. The generated calendar has a later datetime, which should be the more common and expected case. 
     #   2. The generated calendar has an earlier datetime, this should be less common.
     # For case 1: 
-    #   The last line of the system roll calendar should be discarded, and the generated roll calendar should be then patched over to the system calendar. 
+    #   The last line of the system roll calendahong r should be discarded, and the generated roll calendar should be then patched over to the system calendar. 
     #   In addition, to generate the multiple prices needed to be spliced to the existing multiple prices file, we need to patch the generated roll calendar with the 2nd last line of the existing calendar. 
     # For case 2: 
     #   The first line of the generated roll calendar should be discarded, and the system roll calendar should be kept as is. 
@@ -302,6 +214,215 @@ def generate_spliced_multiple_prices(instrument_code, multiple_prices_from_db, s
     #from sysinit.futures.multiple_and_adjusted_from_csv_to_db import init_db_with_csv_prices_for_code
     #init_db_with_csv_prices_for_code(instrument_code, multiple_price_datapath=spliced_multiple_prices)
 
+
+def update_repo_multiple_prices_for_instrument (instrument_code): 
+    #1. generate a roll calendar from existing multiple prices, 
+    #2. copy the futures contract parquets 
+    #3. generate the roll calendar from the copied parquet files
+    #4. generate multiple prices from the generated roll calendar 
+    #5. Check if the generated multiple prices have the same last line as the existing multiple prices, if not there is likely a spurious roll in the generated roll calendar
+    #6. Deal with the spurious roll problem 
+    config = Config()
+    config = get_production_config()
+    roll_calendars_from_multiple_prices = os.path.join('data', 'futures', 'roll_calendars_from_multiple_prices')
+    roll_calendars_from_db = os.path.join('data', 'futures', 'roll_calendars_from_db')
+    multiple_prices_from_db = os.path.join('data', 'futures', 'multiple_from_db')
+    spliced_multiple_prices = os.path.join('data', 'futures', 'multiple_prices_csv_spliced')
+    patched_roll_calendars = os.path.join('data', 'futures', 'patched_roll_calendars')
+    tmp_futures_contract_price_parquets = os.path.join(config.get_element("parquet_store")+'/'+'tmp_futures_contract_price_parquets')
+    tmp_futures_contract_price_parquets_contract_collection = tmp_futures_contract_price_parquets + '/' + CONTRACT_COLLECTION
+
+    auxiliary_folders = [roll_calendars_from_multiple_prices, roll_calendars_from_db, multiple_prices_from_db, spliced_multiple_prices, patched_roll_calendars, tmp_futures_contract_price_parquets, tmp_futures_contract_price_parquets_contract_collection]
+    for folder in auxiliary_folders:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+    #1. generate roll calendar from existing multiple prices
+    diag_prices = diagPrices()
+    csv_roll_calendars_from_mulitple_prices = csvRollCalendarData(roll_calendars_from_multiple_prices)
+    db_multiple_prices = diag_prices.db_futures_multiple_prices_data
+    multiple_prices = db_multiple_prices.get_multiple_prices(instrument_code)
+    roll_calendar_from_multiple_prices = rollCalendar.back_out_from_multiple_prices(multiple_prices)
+    #note that the backed out roll calendar from the multiple prices will have a spurious last line so we'll remove it. 
+    #Removing the spurious last line also ensures that enough futures_contract_prices_parquets are copied over to the temporary folder for the next steps 
+    roll_calendar_from_multiple_prices = remove_spurious_roll_from_roll_calendar_data(roll_calendar_from_multiple_prices)
+    csv_roll_calendars_from_mulitple_prices.add_roll_calendar(instrument_code, roll_calendar_from_multiple_prices, ignore_duplication=True)
+
+    #2. copy contract parquets to the temporary folder for the instrument. 
+    copy_futures_contract_price_parquets_for_roll_calendar_for_instrument(instrument_code, config, csv_roll_calendars_from_mulitple_prices,tmp_futures_contract_price_parquets_contract_collection)
+
+    #3. generate roll calendar from the copied parquet files
+    tmp_futures_contract_parquet_access = ParquetAccess(tmp_futures_contract_price_parquets)
+    tmp_parquet_futures_contract_price_data = parquetFuturesContractPriceData(tmp_futures_contract_parquet_access)
+    generated_roll_calendar = build_and_write_roll_calendar(instrument_code,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
+
+    #3.1 prune the last line of the generated roll calendar
+    generated_roll_calendar = remove_spurious_roll_from_roll_calendar_data(generated_roll_calendar)
+    csv_roll_calendars_from_db = csvRollCalendarData(roll_calendars_from_db)
+    csv_roll_calendars_from_db.add_roll_calendar(instrument_code, generated_roll_calendar, ignore_duplication=True)
+
+    #4. generate multiple prices from the generated roll calendar
+    generated_multiple_prices = process_multiple_prices_single_instrument(instrument_code, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)
+
+    #5. check if the last line of existing multiple prices is in the generated multiple prices, if not there is an issue
+    last_supplied_multiple_prices_dt = multiple_prices.index[-1]
+    generated = futuresMultiplePrices(generated_multiple_prices.loc[last_supplied_multiple_prices_dt:])
+
+    #5.1 While it is generally useful to remove the last line of the generated roll calendar to avoid spurious rolls, it is possible that the last line is an acutal roll
+    #Removing an actual roll would keep a contract for too long. As a remedy, we remove the multiple prices rows from the last row, for all rows without a PRICE for PRICE_CONTRACT
+    #generated = generated[isnull(generated.PRICE & ~generated.PRICE.isna]
+    while not generated.empty: 
+        if generated.iloc[-1].PRICE is not None and not pd.isna(generated.iloc[-1].PRICE):
+            break
+        else:
+            generated = generated.iloc[:-1]
+
+    if generated.empty:
+        print(f"Generated multiple prices for {instrument_code} is empty after removing rows without PRICE, skipping splicing")
+        return None
+    
+    first_generated = generated.index[0]
+    if first_generated == last_supplied_multiple_prices_dt:
+        # check we're using the same price and forward contracts (i.e. no rolls missing, which there shouldn't be if there is date overlap)
+        # nb we don't assert that the CARRY_CONTRACT is the same for supplied and generated, as some of the rolls implicit in the supplied multiple_prices don't match the pattern in the rollconfig.csv
+        assert(str(multiple_prices.iloc[-1].PRICE_CONTRACT) == str(generated.iloc[0].PRICE_CONTRACT))  #the typecast is necessary as the comparison sometimes fails with undefined datatype of PRICE_CONTRACT and FORWARD_CONTRACT
+        assert(str(multiple_prices.iloc[-1].FORWARD_CONTRACT) == str(generated.iloc[0].FORWARD_CONTRACT))
+        overlapped_row = generated.iloc[[0]]
+        generated = generated.iloc[1:]
+        spliced = pd.concat([multiple_prices, generated])
+        #If the supplied data contains NAs in the overlapping row that has value in the generated data, update the NAs with data
+        spliced = spliced.combine_first(overlapped_row)  
+        #spliced.to_csv(os.path.join(spliced_multiple_prices, instrument_code+'.csv'))
+        spliced_multiple_prices = csvFuturesMultiplePricesData(spliced_multiple_prices)
+        spliced_multiple_prices.add_multiple_prices(instrument_code, spliced, ignore_duplication=True)
+        return spliced
+    else:
+        #in this case the generated multiple prices has no overlap with the existing multiple prices 
+        #The way pandas dataframe is sliced means that the first row of the generated multiple prices is at a later datetime than the last row of the existing multiple prices
+        #The price and forward contracts should be no later than the contracts in the last row of the existing multiple prices
+        assert(str(multiple_prices.iloc[-1].PRICE_CONTRACT) <= str(generated.iloc[0].PRICE_CONTRACT))  
+        assert(str(multiple_prices.iloc[-1].FORWARD_CONTRACT) <= str(generated.iloc[0].FORWARD_CONTRACT))
+        spliced = pd.concat([multiple_prices, generated])
+        spliced_multiple_prices = csvFuturesMultiplePricesData(spliced_multiple_prices)
+        spliced_multiple_prices.add_multiple_prices(instrument_code, spliced, ignore_duplication=True)
+        return spliced
+
+#Update repo multiple prices for all instruments: 
+if __name__ == "__main__":
+
+    #Backup existing system roll calendars
+    backup_repo_data()
+    
+    db_multiple_prices_parquet_access = ParquetAccess(get_production_config().get_element("parquet_store"))
+    db_multiple_prices = parquetFuturesMultiplePricesData(db_multiple_prices_parquet_access)
+    multiple_prices_instrument_list = db_multiple_prices.get_list_of_instruments()
+    print(multiple_prices_instrument_list)
+    
+    instrument_pickle_file = 'processed_tickers.pkl'
+    if os.path.exists(instrument_pickle_file):
+        with open(instrument_pickle_file,'rb') as file:  
+            processed_instruments = pickle.load(file)
+    else:
+        processed_instruments = []
+    processed_instruments = []
+
+    for instrument in multiple_prices_instrument_list:
+    #for instrument in ['MILKDRY']:
+        if instrument in processed_instruments: 
+            continue
+
+        print(instrument)
+        try:
+            update_repo_multiple_prices_for_instrument(instrument)
+        except Exception as e:
+            print(f"Error processing {instrument}: {e}")
+            continue
+
+        processed_instruments += [instrument]
+        with open (instrument_pickle_file, 'wb') as file: 
+            pickle.dump(processed_instruments, file)
+
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+###############################################################################################################################################################################################################
+#TEST CODE THAT IS NOT USED IN THE ACTUAL SCRIPT, JUST FOR CHECKING AND DIAGNOSIS PURPOSES.
+
+#This is a test function to check the parquet_futures_contract_price_data object and the data it contains
+#This code is not used in the actual script
+def test_parquet_futures_code():
+    instrument_code = 'GAS_US_mini'
+    #PST's default behavior is to start with the default parquet_future_contract_price_data object and the code below is just for checking and comparison
+    #parquet_futures_contract_price_data, prices, dict_of_all_futures_contract_prices, dict_of_futures_contract_prices are based on the PST system folders where ALL historical futures contract prices are stored
+    #They are not used in this script. 
+    diag_prices = diagPrices()
+    parquet_futures_contract_price_data = diag_prices.db_futures_contract_price_data
+    prices = parquet_futures_contract_price_data 
+    #The name of merged_prices_for_instrument is misleading. In the actual call to the parquet object to read files from the folder, a data_type parameter doubled as the subfolder name is passed to the function.
+    #In the case of building roll calendars from futures contract prices, the data_type is CONTRACT_COLLECTION, which points to the futures_contract_prices subfolder in the parquet store
+    #Retrieve a dictionary of OHLCV data for each contract, where the key of the dictionary is the contract ID, which is the expiry
+    dict_of_all_futures_contract_prices = prices.get_merged_prices_for_instrument(instrument_code) 
+    #print(dict_of_all_futures_contract_prices)
+    #for key in dict_of_all_futures_contract_prices.keys():
+    #    print(key, dict_of_all_futures_contract_prices[key])
+    #Returns the final prices, or Close prices, C of the OHLCV data for each contract, again with the contract ID as the key in a dictionary format
+    dict_of_futures_contract_prices = dict_of_all_futures_contract_prices.final_prices()
+    #print(dict_of_all_futures_contract_prices)
+    #for key in dict_of_futures_contract_prices.keys():
+    #    print(key, dict_of_futures_contract_prices[key])
+
+
+#print(tmp_parquet_futures_contract_price_data)
+#tmp_dict_of_all_futures_contract_prices = tmp_parquet_futures_contract_price_data.get_merged_prices_for_instrument( instrument_code )
+#tmp_dict_of_futures_contract_prices = tmp_dict_of_all_futures_contract_prices.final_prices()
+#print(tmp_dict_of_all_futures_contract_prices)
+    
+
+##THis is too much of special case and should not be used. Need a more robust approach to handle spurious rolls. 
 def generate_spliced_multiple_prices_with_spurious_roll(instrument_code, multiple_prices_from_db, spliced_multiple_prices):
     # Similar to the previous function, but with additional handling for spurious rolls
     # 2025.08.17  see Notion notes on this issue https://www.notion.so/Multiple-Prices-from-spurious-rolls-25239604e82e8046b0add26bc508ebf3?source=copy_link
@@ -350,85 +471,3 @@ def generate_spliced_multiple_prices_with_spurious_roll(instrument_code, multipl
         if supplied.empty:
             print(f"supplied is empty after dropping last_supplied_dt for {instrument_code}, skipping splicing")
             return
-
-#Build all temporary roll calendars: 
-if __name__ == "__main__":
-
-    """ instrument = 'AEX'
-    multiple_prices_from_db  = '/mnt/sda1/pysystemtrade/data/futures/multiple_from_db'
-    spliced_multiple_prices = '/mnt/sda1/pysystemtrade/data/futures/multiple_prices_csv_spliced'
-    generate_spliced_multiple_prices_with_spurious_roll(instrument, multiple_prices_from_db, spliced_multiple_prices)
-    exit()
-     """
-    #Backup existing system roll calendars
-    #backup_repo_data()
-
-    roll_calendars_from_db, multiple_prices_from_db, spliced_multiple_prices, patched_roll_calendars = create_tmp_directories_for_update_roll_calendars()
-    tmp_futures_contract_price_parquets, tmp_futures_contract_price_parquets_contract_collection = prepare_tmp_futures_contract_parquets_folder_for_updating_roll_calendars()
-    #copy_futures_contract_price_parquets_for_roll_calendar(tmp_futures_contract_price_parquets_contract_collection)
-
-
-    #This is where I create a tmp_parquet_futures_contract_price_data that points to the temporary directory where only futures contract prices since the last roll calendar line item is kept
-    #The build_and_write_roll_calendar function will take the tmp_parquet_futures_contract_price_data object as an input. 
-    #It will then generate roll calendars that can be patched to existing roll calendars 
-    
-    tmp_futures_contract_parquet_access = ParquetAccess(tmp_futures_contract_price_parquets)
-    tmp_parquet_futures_contract_price_data = parquetFuturesContractPriceData(tmp_futures_contract_parquet_access)
-    #print(tmp_parquet_futures_contract_price_data)
-    #tmp_dict_of_all_futures_contract_prices = tmp_parquet_futures_contract_price_data.get_merged_prices_for_instrument( instrument_code )
-    #tmp_dict_of_futures_contract_prices = tmp_dict_of_all_futures_contract_prices.final_prices()
-    #print(tmp_dict_of_all_futures_contract_prices)
-    system_roll_calendar_path = os.path.join('data', 'futures', 'roll_calendars_csv')
-    repo_roll_calendar_data = csvRollCalendarData()
-    
-    #prepare_adjust_prices_csv_for_update()
-
-    instrument_pickle_file = 'processed_tickers.pkl'
-    if os.path.exists(instrument_pickle_file):
-        with open(instrument_pickle_file,'rb') as file:  
-            processed_instruments = pickle.load(file)
-    else:
-        processed_instruments = []
-
-    print(repo_roll_calendar_data.keys())
-    #for instrument in ['BEL20', 'BUTTER', 'CHEESE', 'ETHANOL', 'GOLD-mini', 'HOUSE-US', 'MILK', 'MILKWET', 'MSCIEMASIA', 'NICKEL-LME', 'NIFTY', 'RUR', 'SGX', 'US-PROPERTY', 'US-FINANCE', 'US-TECH', 'WHEY'  ]:
-    for instrument in ['MSCIEMASIA']:
-    #for instrument in repo_roll_calendar_data.keys():
-        #if instrument in ['BB3M', 'BEL20', 'BRENT', 'COAL', 'EDOLLAR', 'ETHANOL', 'GAS-LAST', 'GAS-PEN', 'GAS_US_mini', 'HIGHYIELD', 'IG', 'IRON', 'LEAD_LME', 'MID-DAX', 'MILKWET', 'NIFTY-IN', 'NIFTY', 'OATIES', 'RICE', 'SARONA', 'SILVER-mini', 'SOFR', 'SONIA3', 'STEEL', 'TIN_LME', 'VIX_mini','VNKI', 'WHEY', 'ZINC_LME']:
-        #    continue
-        #if instrument in ['INR-micro', 'NICKEL_LME', 'NIFTY-IN', 'R1000_mini', 'MILK', 'MILKDRY', 'MILKWET']: #These are instruments with various data issues, skipping for now
-        #    continue
-
-        if instrument in processed_instruments: 
-            continue
-
-        print(instrument)
-        #1. Generate a roll calendar for the instrument using the tmp_parquet_futures_contract_price_data
-        try:
-            build_and_write_roll_calendar(instrument,input_prices=tmp_parquet_futures_contract_price_data, output_datapath=roll_calendars_from_db,check_before_writing=False)
-        except Exception as e: 
-            print(e)
-
-        #2. Resolve the first roll in the generated roll calendar by comparing it to the last roll in the system roll calendar
-        #   Patch up the system roll calendar with the correct generated roll calendar 
-        #   Update the generated roll calendar with the 'real' last roll from the system roll calendar to ensure that the multiple prices generated from the roll calendar are correct without gaps
-        correct_generated_roll_calendars(instrument, system_roll_calendar_path, roll_calendars_from_db,patched_roll_calendars)
-        
-        #3. Generate multiple prices for the instrument using the generated roll calendar
-        try:
-            process_multiple_prices_single_instrument(instrument, csv_multiple_data_path=multiple_prices_from_db,  ADD_TO_DB=False, csv_roll_data_path=roll_calendars_from_db, ADD_TO_CSV=True)
-            generate_spliced_multiple_prices(instrument, multiple_prices_from_db, spliced_multiple_prices)
-            
-        except Exception as e:
-            print(e)
-
-        ##### This should be a one-off patch run on August 17, 2025 to handle spurious multiple prices data from spurious rolls 
-        ##### For safety, this function puts its output files under spliced_multiple_prices/tmp        
-        try:
-            generate_spliced_multiple_prices_with_spurious_roll(instrument, multiple_prices_from_db, spliced_multiple_prices)
-        except Exception as e: 
-            print(e)
-
-        processed_instruments += [instrument]
-        with open (instrument_pickle_file, 'wb') as file: 
-            pickle.dump(processed_instruments, file)

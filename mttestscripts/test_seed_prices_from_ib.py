@@ -1,4 +1,5 @@
 from random import shuffle
+import time
 from sysdata.csv.csv_instrument_data import csvFuturesInstrumentData
 from sysdata.config.production_config import get_production_config, Config
 from sysdata.parquet.parquet_futures_per_contract_prices import CONTRACT_COLLECTION
@@ -200,4 +201,14 @@ if __name__ == "__main__":
             seed_price_data_from_IB(instrument)
         except Exception as e:
             print(e)
+
+    i = 0 
+    while i < 3:
+        for instrument in instruments2:
+            try:
+                seed_price_data_from_IB(instrument)
+            except Exception as e:
+                print(e)
+        i += 1
+        time.sleep(3600)
 

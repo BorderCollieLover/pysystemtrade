@@ -1,6 +1,6 @@
 from mtfuturesdata.mtIBData import mtIBData
 from mtfuturesdata.mtMongoClient import mtMongoClient
-from ib_insync import Future
+from ib_async import Future
 from time import sleep
 from sysdata.config.production_config import get_production_config, Config
 import re

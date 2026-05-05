@@ -8,7 +8,6 @@ from sysdata.config.production_config import get_production_config, Config
 from sysdata.csv.csv_instrument_data import csvFuturesInstrumentData
 from sysdata.csv.csv_adjusted_prices import csvFuturesAdjustedPricesData
 from sysdata.parquet.parquet_access import ParquetAccess
-from sysdata.parquet.parquet_access import EXTENSION as PARQUET_EXTENSION
 from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData, CONTRACT_COLLECTION,from_contract_and_freq_to_key,from_key_to_freq_and_contract
 from sysproduction.data.broker import dataBroker
 from sysproduction.update_historical_prices import write_merged_prices_for_contract

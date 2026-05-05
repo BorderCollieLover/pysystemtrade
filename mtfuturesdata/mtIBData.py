@@ -13,7 +13,7 @@ from syslogging.logger import *
 from sysdata.mongodb.mongo_IB_client_id import mongoIbBrokerClientIdData
 from sysdata.data_blob import identifying_name
 from sysbrokers.IB.client.ib_price_client import  TIMEOUT_SECONDS_ON_HISTORICAL_DATA
-from ib_insync import Contract, Future, IB, util
+from ib_async import Future, IB, util
 import time
 from datetime import timezone
 VERY_FEW_DATA_POINTS = 5

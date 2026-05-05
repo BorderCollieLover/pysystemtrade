@@ -15,7 +15,7 @@ from sysdata.config.production_config import get_production_config, Config
 from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData
 from sysdata.parquet.parquet_access import ParquetAccess
 from sysproduction.data.prices import diagPrices
-from mttestscripts.files_tool import list_all_instruments_from_a_directory, backup_one_folder
+from mttestscripts.files_tool import backup_one_folder
 from mttestscripts.roll_calendars.remove_spurious_roll import remove_spurious_roll_from_roll_calendar_data
 
 def backup_repo_data():

@@ -2,7 +2,7 @@ from mttestscripts.files_tool import back_up_parquet_into_csv, backup_one_folder
 from sysdata.config.production_config import get_production_config, Config
 import os
 from mttestscripts.clean_pst_contract_prices import dedup_all_pst_contract_prices
-from mttestscripts.ohlc_parquet_cleanup_tools import dedup_all_ib_parquets
+from mttestscripts.parquet.ohlc_parquet_cleanup_tools import dedup_all_ib_parquets
 
 
 #Back up all data parquets into csv files for more data protection
@@ -39,8 +39,8 @@ def backup_all_data_parquet_into_csv_files(backup_root):
 
 if __name__ == "__main__":
     #ensure contract prices are deduped before backup -- hardly necessary but just in case
-    #dedup_all_ib_parquets()
-    #dedup_all_pst_contract_prices()
+    dedup_all_ib_parquets()
+    dedup_all_pst_contract_prices()
 
     config = Config()
     config = get_production_config()

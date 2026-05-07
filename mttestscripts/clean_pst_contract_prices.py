@@ -16,14 +16,13 @@ from sysdata.data_blob import dataBlob
 from sysdata.config.production_config import get_production_config, Config
 from sysdata.csv.csv_instrument_data import csvFuturesInstrumentData
 from sysdata.parquet.parquet_access import ParquetAccess
-from sysdata.parquet.parquet_access import EXTENSION as PARQUET_EXTENSION
-from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData, CONTRACT_COLLECTION
+from sysdata.parquet.parquet_futures_per_contract_prices import parquetFuturesContractPriceData
 from sysproduction.data.broker import dataBroker
 from sysproduction.update_historical_prices import write_merged_prices_for_contract
 from sysproduction.data.prices import diagPrices
 from sysobjects.contracts import futuresContract
 from sysobjects.futures_per_contract_prices import futuresContractPrices
-from syscore.dateutils import Frequency, DAILY_PRICE_FREQ, HOURLY_FREQ, month_from_contract_letter, contract_month_from_number
+from syscore.dateutils import Frequency, DAILY_PRICE_FREQ, HOURLY_FREQ, month_from_contract_letter
 from mtfuturesdata.mtMongoClient import mtMongoClient
 from mttestscripts.parquet.ohlc_parquet_cleanup_tools import clean_up_ohlc
 

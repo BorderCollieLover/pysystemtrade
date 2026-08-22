@@ -203,7 +203,7 @@ if __name__ == "__main__":
             print(e)
 
     i = 0 
-    while i < 3:
+    while i < 1:
         for instrument in instruments2:
             try:
                 seed_price_data_from_IB(instrument)

@@ -18,7 +18,7 @@ db_multiple_prices = parquetFuturesMultiplePricesData(db_multiple_prices_parquet
 
 print(db_multiple_prices.get_list_of_instruments() )
 
-instrument_code = 'BUTTER'
+instrument_code = 'WHEY'
 
 csv_multiple_prices_for_instrument = csv_multiple_prices_data._get_multiple_prices_without_checking(instrument_code)
 print(f"Multiple prices for {instrument_code} from CSV:")

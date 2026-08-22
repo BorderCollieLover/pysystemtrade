@@ -9,7 +9,7 @@ from datetime import date, datetime
 from mtfuturesdata.count_parquet_data import count_all
 from mtfuturesdata.mtIBFuturesContracts import mtIBContract
 
-number_of_processes = 8
+number_of_processes = 6
 #A multiprocessing setup in PST, the basic example in this code works ok
 mtIBDataUpdater_instance = None
 def set_global_dataupdater_instance():

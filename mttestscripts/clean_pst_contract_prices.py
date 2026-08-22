@@ -73,11 +73,11 @@ PST_OHLC_Spike_Clean_Up_Contracts_Remove_First_N_Lines = [
 
 Instrument_to_IB_Futures_Contract_Ticker_Mapping = [
     #{'instrument': 'BEL20', 'contract_ticker_format': 'BXF[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
-    {'instrument': 'BUTTER', 'contract_ticker_format': 'CB[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    #{'instrument': 'BUTTER', 'contract_ticker_format': 'CB[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     #{'instrument': 'CHEESE', 'contract_ticker_format': 'CSC[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
-    #{'instrument': 'HOUSE-US', 'contract_ticker_format': 'CUS[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     #{'instrument': 'MILK', 'contract_ticker_format': 'DC[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     #{'instrument': 'MILKWET', 'contract_ticker_format': 'GDK[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    #{'instrument': 'MILKDRY', 'contract_ticker_format': 'GNF[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     #{'instrument': 'MSCIEMASIA', 'contract_ticker_format': 'ASN[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     #{'instrument': 'NIFTY', 'contract_ticker_format': 'NIFTY[FGHJKMNQUVXZ]2[0-9]_*', 'year_length': 2, 'month_length': 1},
     #{'instrument': 'SGX', 'contract_ticker_format': 'ST[FGHJKMNQUVXZ]2[0-9]_*', 'year_length': 2, 'month_length': 1},
@@ -85,6 +85,11 @@ Instrument_to_IB_Futures_Contract_Ticker_Mapping = [
     #{'instrument': 'US-FINANCE', 'contract_ticker_format': 'XAF[HMUZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     #{'instrument': 'US-TECH', 'contract_ticker_format': 'XAK[HMUZ][0-9]_*', 'year_length': 1, 'month_length': 1},
     #{'instrument': 'WHEY', 'contract_ticker_format': 'DY[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    #{'instrument': 'USDCNH-CME', 'contract_ticker_format': 'CNH[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    {'instrument': 'CNH-HK', 'contract_ticker_format': 'CUS[FGHJKMNQUVXZ][0-9]_*', 'year_length': 1, 'month_length': 1},
+    
+    
+    
 ]
 
 Contract_to_IB_Futures_Contract_Ticker_Mapping = [

@@ -1,6 +1,7 @@
 from mttestscripts.files_tool import back_up_parquet_into_csv, backup_one_folder
 from sysdata.config.production_config import get_production_config, Config
 import os
+import subprocess
 from mttestscripts.clean_pst_contract_prices import dedup_all_pst_contract_prices
 from mttestscripts.parquet.ohlc_parquet_cleanup_tools import dedup_all_ib_parquets
 
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     backup_all_data_parquet_into_csv_files(back_up_root)
 
     destination_path = '/mnt/sdb1/DATABackup/'
-    os.system("rsync -av %s %s" % (back_up_root, destination_path))
+    subprocess.run(["rsync", "-av", back_up_root, destination_path])
 
     #back_up_root = '/mnt/sdb1/DATA'
     #backup_all_data_parquet_into_csv_files(back_up_root)
